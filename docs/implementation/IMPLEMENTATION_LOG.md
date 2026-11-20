@@ -4,6 +4,56 @@ Append one entry per implementation pass (one story per pass), **most recent fir
 
 ---
 
+## Pass: `2026-11-21` — US-`5` `Detect lost tracking and re-select the target`
+
+**Branch:** `feature/lost-tracking-reselect`
+**Traces to:** `docs/design/DESIGN.md` (US-5), `docs/architecture/ARCHITECTURE.md` (entities/decisions: LossRule; decision: stop at loss and re-select)
+**Approval basis:** Requirement Analysis entry approved `2026-11-21`; Solution Architecture entry approved `2026-11-21` (see `docs/APPROVAL_LOG.md`)
+
+### Red / Green Evidence
+
+- **Red** (tests committed before production code, `python -m pytest --continue-on-collection-errors -m "not perf"`): `3 failed, 116 passed, 1 deselected, 1 warning, 1 error in 15.12s` — exit code 1.
+- Failing: `test_lost_tracking_is_reported_and_reselection_resumes`, `test_reselecting_earlier_replaces_later_results`, `test_no_loss_on_clean_video`, `tests/test_loss.py`
+- **Green** (after the implementation commit, `python -m pytest`): `135 passed, 1 warning in 59.78s` — exit code 0. The tests were not modified between red and green.
+
+### Acceptance Criteria Coverage
+
+| Scenario | Status | Test(s) |
+|---|---|---|
+| Tracker reports failure | ✅ Pass | test_loss.py::test_tracker_failure_flag_means_lost, ::test_degenerate_box_means_lost (4 cases), ::test_run_stops_at_first_tracker_failure, ::test_real_tracker_reports_loss_when_target_disappears, test_api_lost.py::test_lost_tracking_is_reported_and_reselection_resumes |
+| Box area jumps by more than 50% | ✅ Pass | test_loss.py::test_area_change_limit_boundaries (6 cases), ::test_run_stops_when_area_jumps_more_than_half |
+| Re-select after a loss | ✅ Pass | test_api_lost.py::test_lost_tracking_is_reported_and_reselection_resumes; banner and frame stepping checked manually in the browser |
+| Re-select on any frame | ✅ Pass | test_api_lost.py::test_reselecting_earlier_replaces_later_results |
+| Invalid re-selection frame | ✅ Pass | Manual UI check (non-number → message, out of range → clamped) |
+
+### Predicates / Invariants Matched
+
+| Entity/Predicate | Invariant / Boundary / Concurrency Rule | Verified By |
+|---|---|---|
+| `AREA_CHANGE_LIMIT` | > 0.5 lost; 150/50 tracked, 150.01/49.99 lost | test_loss.py::test_area_change_limit_boundaries |
+| `Loss stops the run` | lost frame recorded, nothing after it | ::test_run_stops_at_first_tracker_failure |
+| `Re-selection` | states before F kept, from F replaced | test_api_lost.py (both re-selection tests) |
+| `No false loss` | clean video never lost | test_api_lost.py::test_no_loss_on_clean_video |
+
+### Open Questions Raised This Pass
+
+| ID | Question | Status | Resolution |
+|---|---|---|---|
+| IQ-7 | Real trackers do not fail on a predictable frame. How do we test the exact loss frame? | Resolved | Use a scripted stand-in for the OpenCV tracker (the external library boundary) for exact frames, plus a real KCF run on a video where the target disappears (frames 30–39) with a range assertion. |
+| IQ-8 | During manual testing the re-select view never finished loading in a background tab. Why? | Resolved | `HTMLImageElement.decode()` can stay pending while the tab is hidden. Replaced with `onload`/`onerror`, and stale frame loads are ignored. |
+
+### Deviations From Approved DESIGN/ARCHITECTURE
+
+- The selection view gained frame stepping (−10/−1/+1/+10 and a frame number box) — caused by resolution of OQ-18: the target is usually still hidden on the loss frame, so re-selecting exactly there is often impossible.
+
+### Version Control Actions
+
+- Branch: `feature/lost-tracking-reselect`
+- Commits: `test(tracking): add failing acceptance tests for US-5`; `feat(tracking): detect lost tracking and allow re-selection`; `docs(implementation): log US-5 implementation pass`; `docs(approval): approve US-5 implementation`
+- PR: `feature/lost-tracking-reselect` → `main` (merge commit, so the red and green commits stay visible in history)
+
+---
+
 ## Pass: `2026-11-21` — US-`4` `See a lock timeline and the longest lock`
 
 **Branch:** `feature/lock-timeline`
