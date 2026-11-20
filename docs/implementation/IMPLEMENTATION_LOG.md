@@ -4,6 +4,57 @@ Append one entry per implementation pass (one story per pass), **most recent fir
 
 ---
 
+## Pass: `2026-11-21` — US-`3` `Define a lock zone and report every lock period`
+
+**Branch:** `feature/lock-zone-periods`
+**Traces to:** `docs/design/DESIGN.md` (US-3), `docs/architecture/ARCHITECTURE.md` (entities/decisions: Zone, LockPeriod; decisions: lock logic on the server, pixel rectangle zone)
+**Approval basis:** Requirement Analysis entry approved `2026-11-21`; Solution Architecture entry approved `2026-11-21` (see `docs/APPROVAL_LOG.md`)
+
+### Red / Green Evidence
+
+- **Red** (tests committed before production code, `python -m pytest --continue-on-collection-errors -m "not perf"`): `9 failed, 55 passed, 1 deselected, 1 warning, 1 error in 14.99s` — exit code 1.
+- Failing: `test_analysis_reports_every_lock_period`, `test_analysis_changes_when_zone_changes`, `test_invalid_zone_gives_clear_error[zone0]`, `test_invalid_zone_gives_clear_error[zone1]`, `test_invalid_zone_gives_clear_error[zone2]`, `test_invalid_zone_gives_clear_error[zone3]`, `test_zone_equal_to_full_frame_is_accepted`, `test_analysis_unknown_video_is_404` (+2 more)
+- **Green** (after the implementation commit, `python -m pytest`): `106 passed, 1 warning in 54.14s` — exit code 0. The tests were not modified between red and green.
+
+### Acceptance Criteria Coverage
+
+| Scenario | Status | Test(s) |
+|---|---|---|
+| Default lock zone | ✅ Pass | Manual UI check (dashed rectangle 25–75% × 10–90%); app.js defaultZone |
+| User draws a new zone | ✅ Pass | test_api_lock.py::test_analysis_changes_when_zone_changes; drawing checked manually in the browser |
+| Locked frame | ✅ Pass | test_lock_periods.py::test_box_inside_zone_boundaries (9 boundary cases), ::test_missing_box_is_never_inside |
+| Every continuous lock period is reported | ✅ Pass | test_lock_periods.py::test_single_period_frames_and_times, ::test_multiple_periods_are_reported_separately, ::test_random_generated_sequences_match_known_answer[0-19], test_api_lock.py::test_analysis_reports_every_lock_period, ::test_end_to_end_lock_period_matches_ground_truth |
+| Lost or untracked frames are never locked | ✅ Pass | test_lock_periods.py::test_lost_frame_breaks_a_lock_period, ::test_untracked_frames_are_never_locked |
+| Invalid zone is rejected | ✅ Pass | test_api_lock.py::test_invalid_zone_gives_clear_error (4 cases), ::test_zone_equal_to_full_frame_is_accepted |
+| Invalid fps is rejected by the lock logic | ✅ Pass | test_lock_periods.py::test_non_positive_fps_is_rejected[0\|-25] |
+
+### Predicates / Invariants Matched
+
+| Entity/Predicate | Invariant / Boundary / Concurrency Rule | Verified By |
+|---|---|---|
+| `Zone inside rule` | borders inclusive; 1 px and 0.001 px outside → not locked | test_lock_periods.py::test_box_inside_zone_boundaries |
+| `LockPeriod.duration` | frames / fps; single frame = 1/fps | ::test_single_frame_lock_lasts_one_frame_period |
+| `LockPeriod list` | matches run lengths of generated sequences (known answers) | ::test_random_generated_sequences_match_known_answer |
+| `Box invariant` | w, h > 0 | ::test_box_rejects_zero_or_negative_size |
+
+### Open Questions Raised This Pass
+
+| ID | Question | Status | Resolution |
+|---|---|---|---|
+| IQ-5 | How can API tests check exact lock periods when a real tracker's boxes jitter by a pixel or two? | Resolved | Inject a known per-frame state sequence into the session (`set_states` helper) for exact answers, plus one end-to-end test against ground truth with ±2 frames tolerance. |
+
+### Deviations From Approved DESIGN/ARCHITECTURE
+
+None.
+
+### Version Control Actions
+
+- Branch: `feature/lock-zone-periods`
+- Commits: `test(lock): add failing acceptance tests for US-3`; `feat(lock): add lock zone and lock period analysis`; `docs(implementation): log US-3 implementation pass`; `docs(approval): approve US-3 implementation`
+- PR: `feature/lock-zone-periods` → `main` (merge commit, so the red and green commits stay visible in history)
+
+---
+
 ## Pass: `2026-11-21` — US-`2` `Track the target through the video`
 
 **Branch:** `feature/target-tracking`

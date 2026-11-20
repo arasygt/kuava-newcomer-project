@@ -36,6 +36,11 @@ function fmt(t) { return `${t.toFixed(2)} s`; }
 function show(view) {
   for (const v of ["uploadView", "selectView", "playView"]) $(v).classList.toggle("hidden", v !== view);
 }
+function defaultZone(v) {
+  // TEKNOFEST-style lock zone: middle 50% horizontally, middle 80% vertically
+  return { x: Math.round(v.width * 0.25), y: Math.round(v.height * 0.1),
+           w: Math.round(v.width * 0.5), h: Math.round(v.height * 0.8) };
+}
 function frameAt(t) {
   const v = state.video;
   return Math.max(0, Math.min(v.frame_count - 1, Math.floor(t * v.fps + 1e-4)));
@@ -82,10 +87,13 @@ async function uploadFile(file) {
     const v = await api("/api/videos", { method: "POST", body: form });
     state.video = v;
     state.states = Array.from({ length: v.frame_count }, () => ["untracked"]);
+    state.zone = defaultZone(v);
+    state.analysis = null;
     $("videoMeta").textContent =
       `${v.filename} · ${v.width}×${v.height} · ${v.fps} fps · ${v.frame_count} frames · ${v.codec}`;
     $("video").src = `/api/videos/${v.id}/file`;
     $("uploadStatus").textContent = "";
+    renderSummary();
     await openSelect(0, false);
   } catch (e) {
     $("uploadStatus").textContent = "";
@@ -135,6 +143,7 @@ function drawSelect() {
   const c = $("selectCanvas"), ctx = c.getContext("2d");
   ctx.drawImage(state.frameImage, 0, 0, c.width, c.height);
   const lw = Math.max(2, c.width / 400);
+  drawZone(ctx, lw);
   if (state.selectBox) {
     const b = state.selectBox;
     ctx.strokeStyle = COLORS.longest; ctx.lineWidth = lw;
@@ -155,6 +164,7 @@ async function startTracking() {
     const r = res.run;
     $("statRun").textContent = `${r.tracker}: ${r.frames_processed} frames in ${r.elapsed_s.toFixed(1)} s`;
     show("playView");
+    await refreshAnalysis();
     seekToFrame(state.selectFrame);
   } catch (e) {
     showError(e.message);
@@ -163,10 +173,57 @@ async function startTracking() {
   }
 }
 
+// ---------- lock zone + analysis ----------
+async function refreshAnalysis() {
+  try {
+    state.analysis = await api(`/api/videos/${state.video.id}/analysis`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ zone: state.zone }),
+    });
+  } catch (e) {
+    showError(e.message);
+  }
+  renderSummary();
+  drawOverlay();
+}
+function toggleZoneDraw() {
+  state.drawingZone = !state.drawingZone;
+  const ov = $("overlay");
+  $("zoneBtn").classList.toggle("active", state.drawingZone);
+  $("zoneBtn").textContent = state.drawingZone ? "Drag on video…" : "Draw lock zone";
+  ov.classList.toggle("drawing", state.drawingZone);
+  if (!state.drawingZone) { ov.onpointerdown = ov.onpointermove = ov.onpointerup = null; return; }
+  $("video").pause();
+  enableRectDraw(ov, (r) => { state.pendingZone = r; drawOverlay(); }, (r) => {
+    state.pendingZone = null;
+    if (r.w < 8 || r.h < 8) {
+      showError("Lock zone too small — drag a larger rectangle.");
+    } else {
+      showError("");
+      state.zone = { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.w), h: Math.round(r.h) };
+      refreshAnalysis();
+    }
+    toggleZoneDraw();
+  });
+}
+
 // ---------- rendering ----------
+function drawZone(ctx, lw) {
+  const z = state.pendingZone || state.zone;
+  if (!z) return;
+  ctx.save();
+  ctx.setLineDash([lw * 4, lw * 3]);
+  ctx.strokeStyle = COLORS.zone; ctx.lineWidth = lw;
+  ctx.strokeRect(z.x, z.y, z.w, z.h);
+  ctx.restore();
+}
 function frameStatus(i) {
   const s = state.states[i];
-  return s ? s[0] : "untracked";
+  if (!s) return "untracked";
+  if (s[0] !== "tracked") return s[0];
+  const z = state.zone, [, x, y, w, h] = s;
+  return x >= z.x && y >= z.y && x + w <= z.x + z.w && y + h <= z.y + z.h ? "locked" : "unlocked";
 }
 let lastFrame = -1;
 function drawOverlay(frame) {
@@ -180,7 +237,8 @@ function drawOverlay(frame) {
   const ctx = ov.getContext("2d");
   ctx.clearRect(0, 0, ov.width, ov.height);
   const lw = Math.max(2, ov.width / 400);
-  const s = state.states[frame], st = frameStatus(frame), color = COLORS.locked;
+  drawZone(ctx, lw);
+  const s = state.states[frame], st = frameStatus(frame), color = COLORS[st];
   if (s && s[0] === "tracked") {
     const [, x, y, w, h] = s;
     ctx.strokeStyle = color; ctx.lineWidth = lw * 1.5;
@@ -198,6 +256,31 @@ function drawOverlay(frame) {
   $("hudTime").textContent = fmt(vid.currentTime);
   $("hudState").textContent = st.toUpperCase();
   $("hudState").style.color = COLORS[st] || COLORS.untracked;
+}
+function renderSummary() {
+  const a = state.analysis, body = $("periodsBody");
+  if (!a) {
+    $("statTotal").textContent = $("statCount").textContent = "—";
+    body.innerHTML = '<tr><td colspan="4" class="hint">No data yet</td></tr>';
+    return;
+  }
+  $("statTotal").textContent = fmt(a.total_locked_time);
+  $("statCount").textContent = a.periods.length;
+  if (!a.periods.length) {
+    body.innerHTML = '<tr><td colspan="4" class="hint">No lock periods</td></tr>';
+    return;
+  }
+  body.innerHTML = "";
+  a.periods.forEach((p, i) => {
+    const tr = document.createElement("tr");
+    const isLongest = false;
+    if (isLongest) tr.className = "longest";
+    tr.innerHTML = `<td>${i + 1}${isLongest ? " ★" : ""}</td><td>${fmt(p.start_time)}</td>` +
+      `<td>${fmt(p.end_time)}</td><td>${fmt(p.duration)}</td>`;
+    tr.title = `Frames ${p.start_frame}–${p.end_frame}`;
+    tr.onclick = () => seekToFrame(p.start_frame);
+    body.appendChild(tr);
+  });
 }
 function seekToFrame(f) {
   const vid = $("video");
@@ -238,10 +321,13 @@ async function init() {
   dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove("over"); uploadFile(e.dataTransfer.files[0]); };
 
   $("startTrackBtn").onclick = startTracking;
+  $("zoneBtn").onclick = toggleZoneDraw;
+  $("zoneResetBtn").onclick = () => { state.zone = defaultZone(state.video); refreshAnalysis(); };
   $("newVideoBtn").onclick = () => {
     state.video = null; state.analysis = null; showError("");
     $("video").removeAttribute("src"); $("fileInput").value = ""; $("videoMeta").textContent = "";
     $("statRun").textContent = "—"; show("uploadView");
+    renderSummary();
   };
   $("video").onerror = () => { if (state.video) showError("The browser could not play this video."); };
   startRenderLoop();

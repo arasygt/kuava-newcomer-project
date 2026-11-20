@@ -47,6 +47,8 @@
         <div class="stage-head">
           <h2>3. Review tracking</h2>
           <div class="controls">
+            <button id="zoneBtn" class="btn">Draw lock zone</button>
+            <button id="zoneResetBtn" class="btn ghost">Default zone</button>
             <button id="newVideoBtn" class="btn ghost">New video</button>
           </div>
         </div>
@@ -63,9 +65,18 @@
     </section>
 
     <aside class="panel side">
-      <h3>Tracking</h3>
+      <h3>Lock summary</h3>
       <div class="stats">
+        <div class="stat"><div class="label">Total locked</div><div id="statTotal" class="value">—</div></div>
+        <div class="stat"><div class="label">Lock periods</div><div id="statCount" class="value">—</div></div>
         <div class="stat"><div class="label">Last run</div><div id="statRun" class="value small">—</div></div>
+      </div>
+      <h3>Lock periods</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Start</th><th>End</th><th>Duration</th></tr></thead>
+          <tbody id="periodsBody"><tr><td colspan="4" class="hint">No data yet</td></tr></tbody>
+        </table>
       </div>
     </aside>
   </main>

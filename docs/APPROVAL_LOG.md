@@ -12,6 +12,22 @@ _No active entry — the next stage will open one._
 
 <!-- Closed (Approved/Rejected) entries, most recent first. -->
 
+### Implementation — US-3 Define a lock zone and report every lock period
+
+- **Status**: Approved
+- **Stage**: Implementation
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/implementation/IMPLEMENTATION_LOG.md, docs/design/DESIGN.md, docs/architecture/ARCHITECTURE.md
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - US-3 implemented on `feature/lock-zone-periods`
+  - Red: 9 failed, 55 passed, 1 deselected, 1 warning, 1 error in 14.99s
+  - Green: 106 passed, 1 warning in 54.14s
+- **Open Questions Resolved This Session**:
+  - IQ-5 — Inject a known per-frame state sequence into the session (`set_states` helper) for exact answers, plus one end-to-end test against ground truth with ±2 frames tolerance.
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
+
 ### Solution Architecture — US-3, US-4 lock zone analysis
 
 - **Status**: Approved
