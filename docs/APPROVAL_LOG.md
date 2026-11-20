@@ -12,6 +12,48 @@ _No active entry — the next stage will open one._
 
 <!-- Closed (Approved/Rejected) entries, most recent first. -->
 
+### Solution Architecture — US-3, US-4 lock zone analysis
+
+- **Status**: Approved
+- **Stage**: Solution Architecture
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/architecture/ARCHITECTURE.md (input: Requirement Analysis — US-3, US-4, approved 2026-11-21)
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - Lock logic as a pure Python module (app/lock.py) behind POST /analysis
+  - Zone = pixel rectangle sent with every analysis request (stateless server)
+  - Timeline drawn on one canvas from merged segments
+  - Entities: Zone, LockPeriod, Segment
+- **Open Questions Resolved This Session**:
+  - AQ-8 — server-side pure Python
+  - AQ-9 — original video pixels, top-left origin
+  - AQ-10 — single canvas bar, min 1 px segments
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
+
+### Requirement Analysis — US-3, US-4 lock zone analysis
+
+- **Status**: Approved
+- **Stage**: Requirement Analysis
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/design/DESIGN.md
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - US-3: lock zone + every continuous lock period
+  - US-4: timeline of locked/unlocked periods + longest lock
+  - NFR: lock-duration logic tested with generated box sequences with known answers
+  - Out of scope this round: loss detection and re-selection
+- **Open Questions Resolved This Session**:
+  - OQ-9 — whole box inside the zone, borders inclusive
+  - OQ-10 — rectangle, default 25–75% × 10–90%, user can redraw
+  - OQ-11 — no minimum duration
+  - OQ-12 — start = first/fps, end = (last+1)/fps, duration = frames/fps
+  - OQ-13 — states: locked, tracked-not-locked, lost, not tracked
+  - OQ-14 — tie → earliest period
+  - OQ-15 — timeline and table rows seek the video
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
+
 ### Implementation — US-2 Track the target through the video
 
 - **Status**: Approved
