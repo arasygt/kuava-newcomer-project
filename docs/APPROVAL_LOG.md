@@ -12,6 +12,23 @@ _No active entry — the next stage will open one._
 
 <!-- Closed (Approved/Rejected) entries, most recent first. -->
 
+### Implementation — US-5 Detect lost tracking and re-select the target
+
+- **Status**: Approved
+- **Stage**: Implementation
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/implementation/IMPLEMENTATION_LOG.md, docs/design/DESIGN.md, docs/architecture/ARCHITECTURE.md
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - US-5 implemented on `feature/lost-tracking-reselect`
+  - Red: 3 failed, 116 passed, 1 deselected, 1 warning, 1 error in 15.12s
+  - Green: 135 passed, 1 warning in 59.78s
+- **Open Questions Resolved This Session**:
+  - IQ-7 — Use a scripted stand-in for the OpenCV tracker (the external library boundary) for exact frames, plus a real KCF run on a video where the target disappears (frames 30–39) with a range assertion.
+  - IQ-8 — `HTMLImageElement.decode()` can stay pending while the tab is hidden. Replaced with `onload`/`onerror`, and stale frame loads are ignored.
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
+
 ### Solution Architecture — US-5 lost tracking and re-selection
 
 - **Status**: Approved

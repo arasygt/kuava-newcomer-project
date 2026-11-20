@@ -1,4 +1,4 @@
-"""OpenCV tracking of a user-selected target."""
+"""OpenCV tracking with lost-track detection."""
 from __future__ import annotations
 
 import time
@@ -19,8 +19,32 @@ TRACKERS: dict[str, Callable[[], object]] = {
 # KCF is the default because it meets the 30 s / 720p < 60 s budget on a laptop CPU;
 # CSRT is more accurate and handles scale but is ~10x slower (see ARCHITECTURE.md).
 DEFAULT_TRACKER = "KCF"
+
+# Tracking is lost when the box area changes by MORE than this fraction between two frames
+AREA_CHANGE_LIMIT = 0.5
 # Frames wider than this are downscaled before tracking (boxes are scaled back)
 TRACK_MAX_WIDTH = 640
+
+REASON_FAILURE = "tracker_failure"
+REASON_AREA = "area_change"
+
+
+def area_change_exceeded(prev: Box, cur: Box, limit: float = AREA_CHANGE_LIMIT) -> bool:
+    """|A_cur - A_prev| / A_prev > limit. Exactly 50% is still accepted."""
+    return abs(cur.area - prev.area) / prev.area > limit
+
+
+def detect_loss(ok: bool, raw_box, prev: Box) -> tuple[Optional[str], Optional[Box]]:
+    """Return (reason, box). reason is None when tracking is still valid."""
+    if not ok or raw_box is None:
+        return REASON_FAILURE, None
+    x, y, w, h = (float(v) for v in raw_box)
+    if w <= 0 or h <= 0:
+        return REASON_FAILURE, None
+    box = Box(x, y, w, h)
+    if area_change_exceeded(prev, box):
+        return REASON_AREA, None
+    return None, box
 
 
 @dataclass
@@ -28,6 +52,8 @@ class TrackRun:
     tracker: str
     start_frame: int
     states: list[FrameState] = field(default_factory=list)
+    lost_frame: Optional[int] = None
+    lost_reason: Optional[str] = None
     elapsed_s: float = 0.0
 
     def to_dict(self) -> dict:
@@ -35,6 +61,8 @@ class TrackRun:
             "tracker": self.tracker,
             "start_frame": self.start_frame,
             "frames_processed": len(self.states),
+            "lost_frame": self.lost_frame,
+            "lost_reason": self.lost_reason,
             "elapsed_s": round(self.elapsed_s, 3),
         }
 
@@ -60,7 +88,11 @@ def track_video(
     max_width: int = TRACK_MAX_WIDTH,
     tracker_factory: Optional[Callable[[], object]] = None,
 ) -> TrackRun:
-    """Track from `start_frame` (where the target is `init_box`) to the end of the video."""
+    """Track from `start_frame` (where the target is `init_box`) until the end or a loss.
+
+    The loss frame is recorded with status LOST and processing stops there so the
+    user can re-select the target on exactly that frame.
+    """
     tracker = tracker_factory() if tracker_factory else make_tracker(tracker_name)
     run = TrackRun(tracker=tracker_name, start_frame=start_frame)
     t0 = time.perf_counter()
@@ -85,6 +117,7 @@ def track_video(
         )
         tracker.init(prep(frame), scaled)
         run.states.append(FrameState(start_frame, TRACKED, init_box))
+        prev = init_box
 
         index = start_frame
         while True:
@@ -95,11 +128,14 @@ def track_video(
             found, raw = tracker.update(prep(frame))
             if found and raw is not None:
                 raw = tuple(v / scale for v in raw)
-            if not found or raw is None or raw[2] <= 0 or raw[3] <= 0:
+            reason, box = detect_loss(found, raw, prev)
+            if reason:
                 run.states.append(FrameState(index, LOST, None))
-                continue
-            box = Box(round(raw[0], 1), round(raw[1], 1), round(raw[2], 1), round(raw[3], 1))
+                run.lost_frame, run.lost_reason = index, reason
+                break
+            box = Box(round(box.x, 1), round(box.y, 1), round(box.w, 1), round(box.h, 1))
             run.states.append(FrameState(index, TRACKED, box))
+            prev = box
     finally:
         cap.release()
 

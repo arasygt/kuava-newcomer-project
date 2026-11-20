@@ -104,9 +104,14 @@ async function uploadFile(file) {
 
 // ---------- target selection ----------
 async function openSelect(frame, cancellable) {
+  frame = Math.max(0, Math.min(state.video.frame_count - 1, frame));
   state.selectFrame = frame;
+  state.selectCancellable = cancellable;
+  $("selectFrameInput").value = frame;
+  $("selectFrameInput").max = state.video.frame_count - 1;
   state.selectBox = null;
   $("startTrackBtn").disabled = true;
+  $("cancelSelectBtn").classList.toggle("hidden", !cancellable);
   $("selectTitle").textContent = frame === 0
     ? "2. Draw a box around the target (first frame)"
     : `Re-select the target at frame ${frame} (${fmt(frame / state.video.fps)})`;
@@ -166,13 +171,30 @@ async function startTracking() {
     $("statRun").textContent = `${r.tracker}: ${r.frames_processed} frames in ${r.elapsed_s.toFixed(1)} s`;
     show("playView");
     await refreshAnalysis();
-    seekToFrame(state.selectFrame);
+    if (r.lost_frame !== null) {
+      showLost(r.lost_frame, r.lost_reason);
+      seekToFrame(r.lost_frame);
+    } else {
+      hideLost();
+      seekToFrame(state.selectFrame);
+    }
   } catch (e) {
     showError(e.message);
     $("startTrackBtn").disabled = false;
     $("selectStatus").textContent = "Tracking failed — adjust the box and try again.";
   }
 }
+
+// ---------- tracking lost ----------
+function showLost(frame, reason) {
+  const why = reason === "area_change"
+    ? "the box size changed by more than 50% between two frames"
+    : "the tracker reported a failure";
+  $("lostText").textContent = `Tracking lost at frame ${frame} (${fmt(frame / state.video.fps)}): ${why}.`;
+  $("reselectLostBtn").onclick = () => { $("video").pause(); hideLost(); openSelect(frame, true); };
+  $("lostBanner").classList.remove("hidden");
+}
+function hideLost() { $("lostBanner").classList.add("hidden"); }
 
 // ---------- lock zone + analysis ----------
 async function refreshAnalysis() {
@@ -351,14 +373,26 @@ async function init() {
   dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove("over"); uploadFile(e.dataTransfer.files[0]); };
 
   $("startTrackBtn").onclick = startTracking;
+  document.querySelectorAll(".stepper [data-step]").forEach((b) => {
+    b.onclick = () => openSelect(state.selectFrame + Number(b.dataset.step), state.selectCancellable);
+  });
+  $("selectFrameInput").onchange = (e) => {
+    const f = Number.parseInt(e.target.value, 10);
+    if (Number.isNaN(f)) { showError("Frame must be a whole number."); return; }
+    showError("");
+    openSelect(f, state.selectCancellable);
+  };
+  $("cancelSelectBtn").onclick = () => show("playView");
   $("zoneBtn").onclick = toggleZoneDraw;
   $("zoneResetBtn").onclick = () => { state.zone = defaultZone(state.video); refreshAnalysis(); };
+  $("reselectBtn").onclick = () => { const v = $("video"); v.pause(); hideLost(); openSelect(frameAt(v.currentTime), true); };
   $("newVideoBtn").onclick = () => {
     state.video = null; state.analysis = null; showError("");
     $("video").removeAttribute("src"); $("fileInput").value = ""; $("videoMeta").textContent = "";
     $("statRun").textContent = "—"; show("uploadView");
     renderSummary();
     drawTimeline();
+    hideLost();
   };
   $("video").onerror = () => { if (state.video) showError("The browser could not play this video."); };
   $("timeline").onclick = (e) => {

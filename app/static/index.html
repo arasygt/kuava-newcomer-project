@@ -13,6 +13,10 @@
   </header>
 
   <div id="error" class="banner error hidden" role="alert"></div>
+  <div id="lostBanner" class="banner warn hidden">
+    <span id="lostText"></span>
+    <button id="reselectLostBtn" class="btn">Re-select target</button>
+  </div>
 
   <main class="layout">
     <section class="panel stage-panel">
@@ -32,9 +36,17 @@
         <div class="stage-head">
           <h2 id="selectTitle">2. Draw a box around the target</h2>
           <div class="controls">
+            <span class="stepper" title="Choose the frame to select the target on">
+              <button class="btn ghost" data-step="-10">−10</button>
+              <button class="btn ghost" data-step="-1">−1</button>
+              <input id="selectFrameInput" type="number" min="0" step="1">
+              <button class="btn ghost" data-step="1">+1</button>
+              <button class="btn ghost" data-step="10">+10</button>
+            </span>
             <label>Tracker
               <select id="trackerSelect"></select>
             </label>
+            <button id="cancelSelectBtn" class="btn ghost hidden">Cancel</button>
             <button id="startTrackBtn" class="btn primary" disabled>Start tracking</button>
           </div>
         </div>
@@ -49,6 +61,7 @@
           <div class="controls">
             <button id="zoneBtn" class="btn">Draw lock zone</button>
             <button id="zoneResetBtn" class="btn ghost">Default zone</button>
+            <button id="reselectBtn" class="btn ghost">Re-select at this frame</button>
             <button id="newVideoBtn" class="btn ghost">New video</button>
           </div>
         </div>
