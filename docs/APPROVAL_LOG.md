@@ -4,7 +4,20 @@
 
 ## Active Entry
 
-_No active entry — the next stage will open one._
+- **Status**: Pending Approval
+- **Stage**: Implementation
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/implementation/IMPLEMENTATION_LOG.md, docs/design/DESIGN.md, docs/architecture/ARCHITECTURE.md
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - US-2 implemented on `feature/target-tracking`
+  - Red: 30 passed, 1 warning, 3 errors in 2.63s
+  - Green: 56 passed, 1 warning in 66.25s (0:01:06)
+- **Open Questions Resolved This Session**:
+  - IQ-3 — Only `opencv-contrib-python-headless==4.10.0.84` in a fresh virtual environment (README warns not to mix OpenCV packages).
+  - IQ-4 — `requestVideoFrameCallback` mediaTime (fallback currentTime), `floor(t·fps + 1e-4)`; seeks go to the middle of the frame.
+- **Approved By**: 
+- **Approval Date**: 
 
 ---
 
