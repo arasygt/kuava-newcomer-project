@@ -27,8 +27,9 @@ class VideoSession:
             self.states = [FrameState(i, UNTRACKED) for i in range(self.info.frame_count)]
 
     def apply_run(self, run: TrackRun) -> None:
-        """A new run replaces all previous results."""
-        self.states = [FrameState(i, UNTRACKED) for i in range(self.info.frame_count)]
+        """Results from `run.start_frame` onwards replace anything tracked before."""
+        for i in range(run.start_frame, len(self.states)):
+            self.states[i] = FrameState(i, UNTRACKED)
         for s in run.states:
             if s.frame < len(self.states):
                 self.states[s.frame] = s
