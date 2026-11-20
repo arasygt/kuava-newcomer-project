@@ -15,7 +15,9 @@
   - Timeline drawn on one canvas from merged segments
   - Entities: Zone, LockPeriod, Segment
 - **Open Questions Resolved This Session**:
-  - none
+  - AQ-8 — server-side pure Python
+  - AQ-9 — original video pixels, top-left origin
+  - AQ-10 — single canvas bar, min 1 px segments
 - **Approved By**: 
 - **Approval Date**: 
 

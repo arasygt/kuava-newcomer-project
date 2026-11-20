@@ -322,6 +322,6 @@ Measured on the development laptop (2 CPU cores), 320×240 synthetic clip: CSRT 
 | AQ-5 | Should tracking run in a background job with progress, or in the request? | solution-architect | Resolved | In the request (thread pool). The 60 s budget keeps it short; concurrent runs on the same video get HTTP 409. |
 | AQ-6 | Which tracker is the default, given the performance budget? | solution-architect | Resolved | KCF (≈ 10 s for 30 s 720p on the dev laptop). CSRT/MIL stay selectable. |
 | AQ-7 | Should frames be downscaled for tracking, and to what size? | solution-architect | Resolved | Yes, to a maximum width of 640 px; boxes are scaled back to original pixels. |
-| AQ-8 | Should the lock logic run in the browser or on the server? | solution-architect | Open | — |
-| AQ-9 | Which coordinate system do boxes and zones use? | solution-architect | Open | — |
-| AQ-10 | How should a timeline with thousands of frames be drawn efficiently? | solution-architect | Open | — |
+| AQ-8 | Should the lock logic run in the browser or on the server? | solution-architect | Resolved | Server, as a pure Python module, so it can be tested with generated sequences. |
+| AQ-9 | Which coordinate system do boxes and zones use? | solution-architect | Resolved | Original video pixels, origin top-left, floats. |
+| AQ-10 | How should a timeline with thousands of frames be drawn efficiently? | solution-architect | Resolved | One canvas bar from merged segments; segments < 1 px are drawn 1 px wide. |
