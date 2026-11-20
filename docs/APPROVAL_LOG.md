@@ -12,3 +12,44 @@ _No active entry — the next stage will open one._
 
 <!-- Closed (Approved/Rejected) entries, most recent first. -->
 
+### Solution Architecture — US-1 video upload and target selection
+
+- **Status**: Approved
+- **Stage**: Solution Architecture
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/architecture/ARCHITECTURE.md (input: Requirement Analysis — US-1, approved 2026-11-21)
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - Python 3.12 + FastAPI + vanilla JS (no build step, one-command run)
+  - H.264 check = ftyp magic + OpenCV FourCC + first-frame decode
+  - Uploads in git-ignored data/uploads/, results in memory
+  - Frame-exact access by sequential grab() instead of seeking
+  - Entities: VideoInfo, VideoSession
+- **Open Questions Resolved This Session**:
+  - AQ-1 — Python + FastAPI + vanilla JS
+  - AQ-2 — no persistence across restarts
+  - AQ-3 — sequential grab() for exact frames
+  - AQ-4 — ftyp + FourCC + decode, no FFmpeg needed
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
+
+### Requirement Analysis — US-1 video upload and target selection
+
+- **Status**: Approved
+- **Stage**: Requirement Analysis
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/design/DESIGN.md
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - US-1: upload an MP4 (H.264) and draw the target box on the first frame
+  - Rejection scenarios: wrong extension, wrong codec, empty/corrupt/truncated file, > 500 MB, box too small, box outside frame
+  - Out of scope this round: tracking, lock zone, timeline, loss handling
+- **Open Questions Resolved This Session**:
+  - OQ-1 — only .mp4 with an H.264 stream; everything else rejected with a message
+  - OQ-2 — 500 MB upload limit
+  - OQ-3 — first frame only in this round; other frames come with US-5
+  - OQ-4 — minimum box 4×4 px
+  - OQ-5 — box must stay inside the frame; UI clamps the drag
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
+
