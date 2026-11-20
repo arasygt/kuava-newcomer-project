@@ -4,7 +4,19 @@
 
 ## Active Entry
 
-_No active entry — the next stage will open one._
+- **Status**: Pending Approval
+- **Stage**: Implementation
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/implementation/IMPLEMENTATION_LOG.md, docs/design/DESIGN.md, docs/architecture/ARCHITECTURE.md
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - US-3 implemented on `feature/lock-zone-periods`
+  - Red: 9 failed, 55 passed, 1 deselected, 1 warning, 1 error in 14.99s
+  - Green: 106 passed, 1 warning in 54.14s
+- **Open Questions Resolved This Session**:
+  - IQ-5 — Inject a known per-frame state sequence into the session (`set_states` helper) for exact answers, plus one end-to-end test against ground truth with ±2 frames tolerance.
+- **Approved By**: 
+- **Approval Date**: 
 
 ---
 
