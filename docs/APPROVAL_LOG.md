@@ -4,7 +4,17 @@
 
 ## Active Entry
 
-- **Status**: Pending Approval
+_No active entry — the next stage will open one._
+
+---
+
+## History
+
+<!-- Closed (Approved/Rejected) entries, most recent first. -->
+
+### Requirement Analysis — US-3, US-4 lock zone analysis
+
+- **Status**: Approved
 - **Stage**: Requirement Analysis
 - **Session Started**: 2026-11-21
 - **Related Doc(s)**: docs/design/DESIGN.md
@@ -22,14 +32,8 @@
   - OQ-13 — states: locked, tracked-not-locked, lost, not tracked
   - OQ-14 — tie → earliest period
   - OQ-15 — timeline and table rows seek the video
-- **Approved By**: 
-- **Approval Date**: 
-
----
-
-## History
-
-<!-- Closed (Approved/Rejected) entries, most recent first. -->
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
 
 ### Implementation — US-2 Track the target through the video
 
