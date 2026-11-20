@@ -4,7 +4,17 @@
 
 ## Active Entry
 
-- **Status**: Pending Approval
+_No active entry — the next stage will open one._
+
+---
+
+## History
+
+<!-- Closed (Approved/Rejected) entries, most recent first. -->
+
+### Requirement Analysis — US-1 video upload and target selection
+
+- **Status**: Approved
 - **Stage**: Requirement Analysis
 - **Session Started**: 2026-11-21
 - **Related Doc(s)**: docs/design/DESIGN.md
@@ -19,12 +29,6 @@
   - OQ-3 — first frame only in this round; other frames come with US-5
   - OQ-4 — minimum box 4×4 px
   - OQ-5 — box must stay inside the frame; UI clamps the drag
-- **Approved By**: 
-- **Approval Date**: 
-
----
-
-## History
-
-<!-- Closed (Approved/Rejected) entries, most recent first. -->
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
 
