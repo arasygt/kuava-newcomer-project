@@ -4,7 +4,17 @@
 
 ## Active Entry
 
-- **Status**: Pending Approval
+_No active entry — the next stage will open one._
+
+---
+
+## History
+
+<!-- Closed (Approved/Rejected) entries, most recent first. -->
+
+### Implementation — US-4 See a lock timeline and the longest lock
+
+- **Status**: Approved
 - **Stage**: Implementation
 - **Session Started**: 2026-11-21
 - **Related Doc(s)**: docs/implementation/IMPLEMENTATION_LOG.md, docs/design/DESIGN.md, docs/architecture/ARCHITECTURE.md
@@ -15,14 +25,8 @@
   - Green: 117 passed, 1 warning in 58.16s
 - **Open Questions Resolved This Session**:
   - IQ-6 — No. `lock_periods()` is now derived from the `locked` timeline segments, so both always agree (refactor step; US-3 tests unchanged and still green).
-- **Approved By**: 
-- **Approval Date**: 
-
----
-
-## History
-
-<!-- Closed (Approved/Rejected) entries, most recent first. -->
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
 
 ### Implementation — US-3 Define a lock zone and report every lock period
 
