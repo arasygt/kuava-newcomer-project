@@ -4,7 +4,21 @@
 
 ## Active Entry
 
-_No active entry — the next stage will open one._
+- **Status**: Pending Approval
+- **Stage**: Solution Architecture
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/architecture/ARCHITECTURE.md (input: Requirement Analysis — US-2, approved 2026-11-21)
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - KCF default tracker (CSRT ≈ 40–50 ms/frame on the 2-core dev laptop would endanger the 60 s budget)
+  - Frames wider than 640 px are downscaled for tracking; boxes scaled back to original pixels
+  - Synchronous POST /track in the thread pool; 409 for a second run on the same video
+  - Browser maps time to frame with requestVideoFrameCallback; seeks to mid-frame
+  - Entities: Box, FrameState, TrackRun
+- **Open Questions Resolved This Session**:
+  - none
+- **Approved By**: 
+- **Approval Date**: 
 
 ---
 
