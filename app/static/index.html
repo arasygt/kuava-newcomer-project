@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Target-Lock Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span>TARGET-LOCK TRACKER</div>
+    <div id="videoMeta" class="meta"></div>
+  </header>
+
+  <div id="error" class="banner error hidden" role="alert"></div>
+
+  <main class="layout">
+    <section class="panel stage-panel">
+      <!-- Step 1: upload -->
+      <div id="uploadView" class="upload">
+        <h2>1. Upload a video</h2>
+        <p class="hint">MP4 (H.264) only. Large files are processed locally on this machine.</p>
+        <label class="drop" id="dropZone">
+          <input type="file" id="fileInput" accept="video/mp4,.mp4">
+          <span>Drop an .mp4 here or click to choose</span>
+        </label>
+        <div id="uploadStatus" class="hint"></div>
+      </div>
+
+      <!-- Step 2: select target on a still frame -->
+      <div id="selectView" class="hidden">
+        <div class="stage-head">
+          <h2 id="selectTitle">2. Draw a box around the target</h2>
+          <div class="controls">
+            <button id="startTrackBtn" class="btn primary" disabled>Confirm target</button>
+          </div>
+        </div>
+        <div class="stage"><canvas id="selectCanvas"></canvas></div>
+        <div id="selectStatus" class="hint">Click and drag on the frame.</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
