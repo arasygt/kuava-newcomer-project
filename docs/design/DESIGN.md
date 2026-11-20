@@ -42,6 +42,13 @@ So that I can judge the lock performance of a flight at a glance
 
 Scope (round 3b): timeline segments, longest lock, summary numbers. Non-functional (from the task): the lock-duration logic is tested with generated box sequences that have known answers.
 
+### US-5: Detect lost tracking and re-select the target
+As a UAV team analyst
+I want the tool to detect when tracking is lost and let me select the target again
+So that a tracker failure does not silently produce wrong lock times
+
+Scope (round 4): loss rules (tracker failure, or box area change > 50% between two frames), stopping at the loss, re-selection and resuming.
+
 ## Gherkin Acceptance Criteria
 
 ```gherkin
@@ -193,6 +200,39 @@ Feature: US-4 Timeline and longest lock
     Then the video seeks to that frame and the overlay shows it
 ```
 
+```gherkin
+Feature: US-5 Lost tracking and re-selection
+
+  Scenario: Tracker reports failure
+    Given tracking is running
+    When the tracker reports failure (or a box with zero/negative size) on frame N
+    Then frame N is marked "lost", tracking stops
+    And frames after N are "not tracked"
+    And a banner says "Tracking lost at frame N" with the reason
+
+  Scenario: Box area jumps by more than 50%
+    Given the box area on frame N-1 is A
+    When the box area on frame N is above 1.5A or below 0.5A
+    Then tracking is lost on frame N with the reason "area change"
+    And an area of exactly 1.5A or exactly 0.5A is still tracked
+
+  Scenario: Re-select after a loss
+    Given tracking was lost on frame N
+    When I press "Re-select target", step to a frame F where the target is visible and draw a new box
+    Then tracking resumes from frame F
+    And results before the re-selection frame are kept
+
+  Scenario: Re-select on any frame
+    Given tracking results exist
+    When I press "Re-select at this frame" on frame F and draw a box
+    Then results from frame F onwards are replaced by the new run
+
+  Scenario: Invalid re-selection frame
+    When I type a frame number that is not a whole number
+    Then the message "Frame must be a whole number." is shown
+    And a number outside 0..frame_count-1 is clamped to the nearest valid frame
+```
+
 ## Open Questions
 
 | ID | Question | Raised By | Status | Resolution |
@@ -212,3 +252,7 @@ Feature: US-4 Timeline and longest lock
 | OQ-13 | Which states must the timeline distinguish? | requirement-analysis | Resolved | Locked, tracked but not locked, lost, and not tracked. The longest lock is outlined. |
 | OQ-14 | If two periods have the same (longest) length, which one is the longest? | requirement-analysis | Resolved | The earliest one. |
 | OQ-15 | Should the timeline be interactive? | requirement-analysis | Resolved | Yes: clicking the timeline or a row of the period table seeks the video to that frame. |
+| OQ-16 | After tracking is lost, should the tracker continue or stop? | requirement-analysis | Open | — |
+| OQ-17 | Is an area change of exactly 50% a loss, and compared to which frame? | requirement-analysis | Open | — |
+| OQ-18 | The target may still be hidden on the loss frame. May the user re-select on another frame? | requirement-analysis | Open | — |
+| OQ-19 | Does a lost frame count as unlocked? | requirement-analysis | Open | — |

@@ -4,7 +4,18 @@
 
 ## Active Entry
 
-_No active entry — the next stage will open one._
+- **Status**: Pending Approval
+- **Stage**: Requirement Analysis
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/design/DESIGN.md
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - US-5: detect lost tracking (tracker failure or > 50% area change) and let the user re-select
+  - Rejection scenarios: non-numeric frame, out-of-range frame (clamped)
+- **Open Questions Resolved This Session**:
+  - none
+- **Approved By**: 
+- **Approval Date**: 
 
 ---
 
