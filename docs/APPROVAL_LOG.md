@@ -12,6 +12,41 @@ _No active entry — the next stage will open one._
 
 <!-- Closed (Approved/Rejected) entries, most recent first. -->
 
+### Solution Architecture — US-5 lost tracking and re-selection
+
+- **Status**: Approved
+- **Stage**: Solution Architecture
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/architecture/ARCHITECTURE.md (input: Requirement Analysis — US-5, approved 2026-11-21)
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - Loss rule in tracking.detect_loss; run stops at the loss frame
+  - Session keeps states before the re-selection frame and replaces the rest
+  - Consolidated system overview and NFR mapping added
+  - Entity: LossRule
+- **Open Questions Resolved This Session**:
+  - AQ-11 — area ratio is scale-invariant; computed in original pixels vs previous tracked box
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
+
+### Requirement Analysis — US-5 lost tracking and re-selection
+
+- **Status**: Approved
+- **Stage**: Requirement Analysis
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/design/DESIGN.md
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - US-5: detect lost tracking (tracker failure or > 50% area change) and let the user re-select
+  - Rejection scenarios: non-numeric frame, out-of-range frame (clamped)
+- **Open Questions Resolved This Session**:
+  - OQ-16 — stop at the loss frame
+  - OQ-17 — strictly > 50% vs the previous frame; exactly 50% still tracked
+  - OQ-18 — re-select on any frame via frame stepping; earlier results kept
+  - OQ-19 — lost frames are never locked
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
+
 ### Implementation — US-4 See a lock timeline and the longest lock
 
 - **Status**: Approved

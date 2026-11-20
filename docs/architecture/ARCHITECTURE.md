@@ -8,6 +8,21 @@ Central index of solution-architect output for this repository. Only requirement
 |---|---|---|---|
 | (this file) | Core | — | Active |
 
+## System Overview
+
+```
+Browser (vanilla JS SPA)                     Python server (FastAPI, uvicorn)
+┌──────────────────────────┐   HTTP/JSON    ┌───────────────────────────────────────┐
+│ upload / select / play   │ ─────────────▶ │ app/main.py     REST API + static     │
+│ <video> + <canvas> overlay│ ◀───────────── │ app/video.py    validation, frames    │
+│ timeline <canvas>, tables │   boxes/frame  │ app/tracking.py OpenCV trackers, loss │
+└──────────────────────────┘                │ app/lock.py     lock zone logic (pure)│
+                                            │ app/store.py    in-memory sessions    │
+                                            └───────────────────────────────────────┘
+```
+
+The server decodes the video with OpenCV (FFmpeg backend), runs the tracker once, keeps one `FrameState` per frame in memory, and sends the boxes to the browser. The browser never re-encodes video: it plays the original MP4 and draws the boxes on a canvas over it.
+
 ## Data Models
 
 ### Entity: VideoInfo
@@ -183,6 +198,28 @@ Traces to: US-4 (docs/design/DESIGN.md)
 **Concurrency / Race-Scenario Analysis:**
 - Same as LockPeriod (pure function of states + zone).
 
+### Entity: LossRule
+Traces to: US-5 (docs/design/DESIGN.md)
+
+| Field | Type | Unit | Constraints |
+|---|---|---|---|
+| AREA_CHANGE_LIMIT | float | ratio | 0.5 |
+| lost_frame | int \| None | frame index | first frame where a rule fired |
+| lost_reason | str \| None | — | `tracker_failure` \| `area_change` |
+
+**Invariants** (must always hold true):
+- Lost on frame t ⇔ tracker returned `ok == False`, or no box, or `w <= 0 or h <= 0`, or `|A_t − A_{t−1}| / A_{t−1} > 0.5`, where A_{t−1} is the area of the last tracked box.
+- When a run is lost on frame t: `states[t].status == "lost"`, the run stops, and the session marks frames t+1.. as `untracked`.
+- Re-selection at frame F replaces the session's states from F onwards and keeps states before F.
+
+**Boundary Behavior:**
+- Min/Max: with A_{t−1} = 100: 150 and 50 → tracked; 150.01 and 49.99 → lost.
+- Empty/Null/Zero: a box of zero width/height counts as tracker failure (no division by zero is possible because A_{t−1} > 0 by the Box invariant).
+- Overflow/Truncation: the ratio is computed in original pixels; it is scale-invariant, so downscaled tracking gives the same decision.
+
+**Concurrency / Race-Scenario Analysis:**
+- Re-selection while a run is active → HTTP 409 (same session lock as US-2).
+
 ## Technology / Design Decisions
 
 ### Decision: Language and framework
@@ -311,6 +348,28 @@ Measured on the development laptop (2 CPU cores), 320×240 synthetic clip: CSRT 
 **Why not DOM segments:** poor performance on long, noisy timelines.
 **Why not a chart library:** unnecessary dependency.
 
+### Decision: Behaviour after a loss
+
+| Option | Benefits | Drawbacks | Chosen |
+|---|---|---|---|
+| Stop at the loss frame; user re-selects on any frame; keep earlier results | Never shows boxes known to be unreliable; matches "let the user select the target again" | User must act after every loss | ✅ |
+| Keep tracking and only flag the loss | No user action | Following frames are probably wrong and would count as locks | ❌ |
+| Automatic re-detection | No user action | Needs a detector (bonus feature, out of scope) | ❌ |
+
+**Why stop:** correctness of lock times matters more than convenience.
+**Why not continue:** produces false locks.
+**Why not auto re-detection:** out of scope for the core requirements.
+
+## Non-Functional Requirements Mapping
+
+| NFR | How it is met | Verified by |
+|---|---|---|
+| 30 s 720p processed in < 60 s on a laptop CPU | KCF default + 640 px tracking width (≈ 10 s measured) | `tests/test_performance.py` |
+| Lock logic tested with generated sequences with known answers | `app/lock.py` is pure; tests build sequences from run lengths | `tests/test_lock_periods.py`, `tests/test_timeline.py` |
+| Large videos never committed; test videos < 5 MB | Test videos are generated into a temp folder at test time; `data/` and `*.mp4` are git-ignored | `.gitignore`, `tests/videogen.py` |
+| One command to run, one command to test | `python run.py`, `python -m pytest` | README |
+| Invalid input never crashes the app | Validation in `video.py`, request models, 400/404/409/413 handlers and a catch-all 500 handler with a message | `tests/test_api_*.py` |
+
 ## Open Questions
 
 | ID | Question | Raised By | Status | Resolution |
@@ -325,3 +384,4 @@ Measured on the development laptop (2 CPU cores), 320×240 synthetic clip: CSRT 
 | AQ-8 | Should the lock logic run in the browser or on the server? | solution-architect | Resolved | Server, as a pure Python module, so it can be tested with generated sequences. |
 | AQ-9 | Which coordinate system do boxes and zones use? | solution-architect | Resolved | Original video pixels, origin top-left, floats. |
 | AQ-10 | How should a timeline with thousands of frames be drawn efficiently? | solution-architect | Resolved | One canvas bar from merged segments; segments < 1 px are drawn 1 px wide. |
+| AQ-11 | Is the area-change ratio affected by tracking on downscaled frames? | solution-architect | Resolved | No: the ratio is scale-invariant. It is computed on boxes converted back to original pixels against the previous tracked box. |
