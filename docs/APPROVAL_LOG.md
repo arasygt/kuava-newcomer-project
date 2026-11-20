@@ -12,6 +12,23 @@ _No active entry — the next stage will open one._
 
 <!-- Closed (Approved/Rejected) entries, most recent first. -->
 
+### Implementation — US-1 Upload a video and select the target
+
+- **Status**: Approved
+- **Stage**: Implementation
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/implementation/IMPLEMENTATION_LOG.md, docs/design/DESIGN.md, docs/architecture/ARCHITECTURE.md
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - US-1 implemented on `feature/video-upload-target-selection`
+  - Red: collection aborted — ImportError while loading conftest (ModuleNotFoundError: No module named 'app')
+  - Green: 30 passed, 1 warning in 6.73s
+- **Open Questions Resolved This Session**:
+  - IQ-1 — Generate them at test time with imageio-ffmpeg (bundled FFmpeg with libx264) into pytest's temp folder (`tests/videogen.py`).
+  - IQ-2 — No. A custom handler returns HTTP 400 with one readable sentence, e.g. `Invalid request — file: Field required`.
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
+
 ### Solution Architecture — US-1 video upload and target selection
 
 - **Status**: Approved
