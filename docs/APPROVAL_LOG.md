@@ -15,7 +15,7 @@
   - Consolidated system overview and NFR mapping added
   - Entity: LossRule
 - **Open Questions Resolved This Session**:
-  - none
+  - AQ-11 — area ratio is scale-invariant; computed in original pixels vs previous tracked box
 - **Approved By**: 
 - **Approval Date**: 
 

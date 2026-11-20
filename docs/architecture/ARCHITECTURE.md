@@ -384,4 +384,4 @@ Measured on the development laptop (2 CPU cores), 320×240 synthetic clip: CSRT 
 | AQ-8 | Should the lock logic run in the browser or on the server? | solution-architect | Resolved | Server, as a pure Python module, so it can be tested with generated sequences. |
 | AQ-9 | Which coordinate system do boxes and zones use? | solution-architect | Resolved | Original video pixels, origin top-left, floats. |
 | AQ-10 | How should a timeline with thousands of frames be drawn efficiently? | solution-architect | Resolved | One canvas bar from merged segments; segments < 1 px are drawn 1 px wide. |
-| AQ-11 | Is the area-change ratio affected by tracking on downscaled frames? | solution-architect | Open | — |
+| AQ-11 | Is the area-change ratio affected by tracking on downscaled frames? | solution-architect | Resolved | No: the ratio is scale-invariant. It is computed on boxes converted back to original pixels against the previous tracked box. |
