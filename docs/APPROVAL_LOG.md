@@ -4,7 +4,17 @@
 
 ## Active Entry
 
-- **Status**: Pending Approval
+_No active entry — the next stage will open one._
+
+---
+
+## History
+
+<!-- Closed (Approved/Rejected) entries, most recent first. -->
+
+### Implementation — US-1 Upload a video and select the target
+
+- **Status**: Approved
 - **Stage**: Implementation
 - **Session Started**: 2026-11-21
 - **Related Doc(s)**: docs/implementation/IMPLEMENTATION_LOG.md, docs/design/DESIGN.md, docs/architecture/ARCHITECTURE.md
@@ -16,14 +26,8 @@
 - **Open Questions Resolved This Session**:
   - IQ-1 — Generate them at test time with imageio-ffmpeg (bundled FFmpeg with libx264) into pytest's temp folder (`tests/videogen.py`).
   - IQ-2 — No. A custom handler returns HTTP 400 with one readable sentence, e.g. `Invalid request — file: Field required`.
-- **Approved By**: 
-- **Approval Date**: 
-
----
-
-## History
-
-<!-- Closed (Approved/Rejected) entries, most recent first. -->
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
 
 ### Solution Architecture — US-1 video upload and target selection
 
