@@ -77,8 +77,8 @@ Feature: US-1 Upload a video and select the target
 
 | ID | Question | Raised By | Status | Resolution |
 |---|---|---|---|---|
-| OQ-1 | Which input formats must be accepted, and what happens with an MP4 whose codec is not H.264? | requirement-analysis | Open | — |
-| OQ-2 | Is there a maximum upload size? | requirement-analysis | Open | — |
-| OQ-3 | Must the target box be drawn on the first frame only, or may the user choose another starting frame? | requirement-analysis | Open | — |
-| OQ-4 | What is the smallest box the user may draw? | requirement-analysis | Open | — |
-| OQ-5 | May the box extend outside the frame? | requirement-analysis | Open | — |
+| OQ-1 | Which input formats must be accepted, and what happens with an MP4 whose codec is not H.264? | requirement-analysis | Resolved | Only `.mp4` with an H.264 video stream. Everything else (other extensions, other codecs inside MP4, corrupt files) is rejected with a clear message; nothing is stored. |
+| OQ-2 | Is there a maximum upload size? | requirement-analysis | Resolved | 500 MB. Larger uploads are rejected with "File is too large (limit 500 MB)". A 30 s 720p clip is ~5–20 MB, so this is generous. |
+| OQ-3 | Must the target box be drawn on the first frame only, or may the user choose another starting frame? | requirement-analysis | Resolved | Round 1: first frame (frame 0), as the task says. Choosing another frame is only needed for re-selection and is handled in US-5. |
+| OQ-4 | What is the smallest box the user may draw? | requirement-analysis | Resolved | 4×4 video pixels. Smaller boxes are refused with "Box too small"; the trackers need some texture to work. |
+| OQ-5 | May the box extend outside the frame? | requirement-analysis | Resolved | No. The drag is clamped to the frame in the UI and the server rejects boxes outside the frame. |

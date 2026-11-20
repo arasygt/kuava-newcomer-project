@@ -14,7 +14,11 @@
   - Rejection scenarios: wrong extension, wrong codec, empty/corrupt/truncated file, > 500 MB, box too small, box outside frame
   - Out of scope this round: tracking, lock zone, timeline, loss handling
 - **Open Questions Resolved This Session**:
-  - none
+  - OQ-1 — only .mp4 with an H.264 stream; everything else rejected with a message
+  - OQ-2 — 500 MB upload limit
+  - OQ-3 — first frame only in this round; other frames come with US-5
+  - OQ-4 — minimum box 4×4 px
+  - OQ-5 — box must stay inside the frame; UI clamps the drag
 - **Approved By**: 
 - **Approval Date**: 
 
