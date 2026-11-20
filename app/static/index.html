@@ -32,13 +32,42 @@
         <div class="stage-head">
           <h2 id="selectTitle">2. Draw a box around the target</h2>
           <div class="controls">
-            <button id="startTrackBtn" class="btn primary" disabled>Confirm target</button>
+            <label>Tracker
+              <select id="trackerSelect"></select>
+            </label>
+            <button id="startTrackBtn" class="btn primary" disabled>Start tracking</button>
           </div>
         </div>
         <div class="stage"><canvas id="selectCanvas"></canvas></div>
         <div id="selectStatus" class="hint">Click and drag on the frame.</div>
       </div>
+
+      <!-- Step 3: playback with overlay -->
+      <div id="playView" class="hidden">
+        <div class="stage-head">
+          <h2>3. Review tracking</h2>
+          <div class="controls">
+            <button id="newVideoBtn" class="btn ghost">New video</button>
+          </div>
+        </div>
+        <div class="stage" id="playStage">
+          <video id="video" controls muted playsinline></video>
+          <canvas id="overlay"></canvas>
+        </div>
+        <div class="hud-row">
+          <span>FRAME <b id="hudFrame">0</b></span>
+          <span>TIME <b id="hudTime">0.00 s</b></span>
+          <span>STATE <b id="hudState">—</b></span>
+        </div>
+      </div>
     </section>
+
+    <aside class="panel side">
+      <h3>Tracking</h3>
+      <div class="stats">
+        <div class="stat"><div class="label">Last run</div><div id="statRun" class="value small">—</div></div>
+      </div>
+    </aside>
   </main>
 
   <script src="app.js"></script>

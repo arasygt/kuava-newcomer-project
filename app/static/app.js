@@ -36,6 +36,10 @@ function fmt(t) { return `${t.toFixed(2)} s`; }
 function show(view) {
   for (const v of ["uploadView", "selectView", "playView"]) $(v).classList.toggle("hidden", v !== view);
 }
+function frameAt(t) {
+  const v = state.video;
+  return Math.max(0, Math.min(v.frame_count - 1, Math.floor(t * v.fps + 1e-4)));
+}
 function normRect(a, b) {
   return { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), w: Math.abs(a.x - b.x), h: Math.abs(a.y - b.y) };
 }
@@ -137,9 +141,26 @@ function drawSelect() {
     ctx.strokeRect(b.x, b.y, b.w, b.h);
   }
 }
-function confirmSelection() {
-  const b = state.selectBox;
-  $("selectStatus").textContent = `Target selected: ${b.w}×${b.h} box at (${b.x}, ${b.y}) on frame ${state.selectFrame}.`;
+async function startTracking() {
+  showError("");
+  $("startTrackBtn").disabled = true;
+  $("selectStatus").textContent = "Tracking… this may take a moment for long videos.";
+  try {
+    const res = await api(`/api/videos/${state.video.id}/track`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ start_frame: state.selectFrame, box: state.selectBox, tracker: $("trackerSelect").value }),
+    });
+    state.states = res.states;
+    const r = res.run;
+    $("statRun").textContent = `${r.tracker}: ${r.frames_processed} frames in ${r.elapsed_s.toFixed(1)} s`;
+    show("playView");
+    seekToFrame(state.selectFrame);
+  } catch (e) {
+    showError(e.message);
+    $("startTrackBtn").disabled = false;
+    $("selectStatus").textContent = "Tracking failed — adjust the box and try again.";
+  }
 }
 
 // ---------- rendering ----------
@@ -147,15 +168,82 @@ function frameStatus(i) {
   const s = state.states[i];
   return s ? s[0] : "untracked";
 }
+let lastFrame = -1;
+function drawOverlay(frame) {
+  if (!state.video) return;
+  const vid = $("video"), ov = $("overlay");
+  if (frame === undefined) frame = frameAt(vid.currentTime);
+  lastFrame = frame;
+  ov.style.width = vid.clientWidth + "px";
+  ov.style.height = vid.clientHeight + "px";
+  if (ov.width !== state.video.width) { ov.width = state.video.width; ov.height = state.video.height; }
+  const ctx = ov.getContext("2d");
+  ctx.clearRect(0, 0, ov.width, ov.height);
+  const lw = Math.max(2, ov.width / 400);
+  const s = state.states[frame], st = frameStatus(frame), color = COLORS.locked;
+  if (s && s[0] === "tracked") {
+    const [, x, y, w, h] = s;
+    ctx.strokeStyle = color; ctx.lineWidth = lw * 1.5;
+    ctx.strokeRect(x, y, w, h);
+    ctx.fillStyle = color;
+    ctx.font = `${Math.round(lw * 7)}px Consolas, monospace`;
+    ctx.fillText(st === "locked" ? "LOCKED" : "TRACKING", x, Math.max(lw * 8, y - lw * 2));
+  }
+  ctx.fillStyle = "rgba(0,0,0,.55)";
+  ctx.fillRect(0, 0, lw * 75, lw * 11);
+  ctx.fillStyle = "#fff";
+  ctx.font = `${Math.round(lw * 7)}px Consolas, monospace`;
+  ctx.fillText(`F ${frame}  ${(frame / state.video.fps).toFixed(2)}s`, lw * 3, lw * 8);
+  $("hudFrame").textContent = frame;
+  $("hudTime").textContent = fmt(vid.currentTime);
+  $("hudState").textContent = st.toUpperCase();
+  $("hudState").style.color = COLORS[st] || COLORS.untracked;
+}
+function seekToFrame(f) {
+  const vid = $("video");
+  vid.currentTime = (f + 0.5) / state.video.fps;  // middle of the frame avoids rounding to f-1
+  drawOverlay(f);
+}
+
+// Redraw on every presented video frame when supported, else on animation frames.
+function startRenderLoop() {
+  const vid = $("video");
+  if ("requestVideoFrameCallback" in HTMLVideoElement.prototype) {
+    const cb = (_, meta) => { if (state.video) drawOverlay(frameAt(meta.mediaTime)); vid.requestVideoFrameCallback(cb); };
+    vid.requestVideoFrameCallback(cb);
+  }
+  const tick = () => {
+    if (state.video && !$("playView").classList.contains("hidden") && vid.paused) {
+      const f = frameAt(vid.currentTime);
+      if (f !== lastFrame) drawOverlay(f);
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  vid.addEventListener("seeked", () => drawOverlay());
+  window.addEventListener("resize", () => drawOverlay(lastFrame >= 0 ? lastFrame : undefined));
+}
 
 // ---------- wiring ----------
 async function init() {
+  try {
+    const t = await api("/api/trackers");
+    $("trackerSelect").innerHTML = t.trackers.map((n) => `<option ${n === t.default ? "selected" : ""}>${n}</option>`).join("");
+  } catch (e) { showError(e.message); }
+
   $("fileInput").onchange = (e) => uploadFile(e.target.files[0]);
   const dz = $("dropZone");
   dz.ondragover = (e) => { e.preventDefault(); dz.classList.add("over"); };
   dz.ondragleave = () => dz.classList.remove("over");
   dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove("over"); uploadFile(e.dataTransfer.files[0]); };
 
-  $("startTrackBtn").onclick = confirmSelection;
+  $("startTrackBtn").onclick = startTracking;
+  $("newVideoBtn").onclick = () => {
+    state.video = null; state.analysis = null; showError("");
+    $("video").removeAttribute("src"); $("fileInput").value = ""; $("videoMeta").textContent = "";
+    $("statRun").textContent = "—"; show("uploadView");
+  };
+  $("video").onerror = () => { if (state.video) showError("The browser could not play this video."); };
+  startRenderLoop();
 }
 init();

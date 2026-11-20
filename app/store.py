@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
+from .lock import UNTRACKED, FrameState
+from .tracking import TrackRun
 from .video import VideoInfo
 
 
@@ -16,6 +18,21 @@ class VideoSession:
     path: Path
     filename: str
     info: VideoInfo
+    states: list[FrameState] = field(default_factory=list)
+    last_run: Optional[TrackRun] = None
+    lock: threading.Lock = field(default_factory=threading.Lock)
+
+    def __post_init__(self) -> None:
+        if not self.states:
+            self.states = [FrameState(i, UNTRACKED) for i in range(self.info.frame_count)]
+
+    def apply_run(self, run: TrackRun) -> None:
+        """A new run replaces all previous results."""
+        self.states = [FrameState(i, UNTRACKED) for i in range(self.info.frame_count)]
+        for s in run.states:
+            if s.frame < len(self.states):
+                self.states[s.frame] = s
+        self.last_run = run
 
 
 class VideoStore:
