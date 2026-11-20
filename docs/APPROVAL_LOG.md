@@ -4,7 +4,20 @@
 
 ## Active Entry
 
-_No active entry — the next stage will open one._
+- **Status**: Pending Approval
+- **Stage**: Solution Architecture
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/architecture/ARCHITECTURE.md (input: Requirement Analysis — US-5, approved 2026-11-21)
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - Loss rule in tracking.detect_loss; run stops at the loss frame
+  - Session keeps states before the re-selection frame and replaces the rest
+  - Consolidated system overview and NFR mapping added
+  - Entity: LossRule
+- **Open Questions Resolved This Session**:
+  - none
+- **Approved By**: 
+- **Approval Date**: 
 
 ---
 
