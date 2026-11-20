@@ -13,7 +13,10 @@
   - US-5: detect lost tracking (tracker failure or > 50% area change) and let the user re-select
   - Rejection scenarios: non-numeric frame, out-of-range frame (clamped)
 - **Open Questions Resolved This Session**:
-  - none
+  - OQ-16 — stop at the loss frame
+  - OQ-17 — strictly > 50% vs the previous frame; exactly 50% still tracked
+  - OQ-18 — re-select on any frame via frame stepping; earlier results kept
+  - OQ-19 — lost frames are never locked
 - **Approved By**: 
 - **Approval Date**: 
 

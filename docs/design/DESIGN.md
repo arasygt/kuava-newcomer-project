@@ -252,7 +252,7 @@ Feature: US-5 Lost tracking and re-selection
 | OQ-13 | Which states must the timeline distinguish? | requirement-analysis | Resolved | Locked, tracked but not locked, lost, and not tracked. The longest lock is outlined. |
 | OQ-14 | If two periods have the same (longest) length, which one is the longest? | requirement-analysis | Resolved | The earliest one. |
 | OQ-15 | Should the timeline be interactive? | requirement-analysis | Resolved | Yes: clicking the timeline or a row of the period table seeks the video to that frame. |
-| OQ-16 | After tracking is lost, should the tracker continue or stop? | requirement-analysis | Open | — |
-| OQ-17 | Is an area change of exactly 50% a loss, and compared to which frame? | requirement-analysis | Open | — |
-| OQ-18 | The target may still be hidden on the loss frame. May the user re-select on another frame? | requirement-analysis | Open | — |
-| OQ-19 | Does a lost frame count as unlocked? | requirement-analysis | Open | — |
+| OQ-16 | After tracking is lost, should the tracker continue or stop? | requirement-analysis | Resolved | Stop. The loss frame is marked "lost", later frames are "not tracked" until the user re-selects. Continuing would produce boxes we know are unreliable. |
+| OQ-17 | Is an area change of exactly 50% a loss, and compared to which frame? | requirement-analysis | Resolved | Strictly more than 50% is a loss (`abs(A_t − A_t-1) / A_t-1 > 0.5`); exactly 50% is still tracked. The comparison is with the previous frame's box. |
+| OQ-18 | The target may still be hidden on the loss frame. May the user re-select on another frame? | requirement-analysis | Resolved | Yes. The selection view gets frame stepping (−10/−1/+1/+10 and a frame number). Results before the chosen frame are kept; results from it onwards are replaced. |
+| OQ-19 | Does a lost frame count as unlocked? | requirement-analysis | Resolved | Yes. A lost frame is never locked, so it ends a lock period. |
