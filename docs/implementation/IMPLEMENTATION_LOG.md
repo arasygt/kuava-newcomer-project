@@ -4,6 +4,54 @@ Append one entry per implementation pass (one story per pass), **most recent fir
 
 ---
 
+## Pass: `2026-11-21` — US-`4` `See a lock timeline and the longest lock`
+
+**Branch:** `feature/lock-timeline`
+**Traces to:** `docs/design/DESIGN.md` (US-4), `docs/architecture/ARCHITECTURE.md` (entities/decisions: Segment; decision: canvas timeline)
+**Approval basis:** Requirement Analysis entry approved `2026-11-21`; Solution Architecture entry approved `2026-11-21` (see `docs/APPROVAL_LOG.md`)
+
+### Red / Green Evidence
+
+- **Red** (tests committed before production code, `python -m pytest --continue-on-collection-errors -m "not perf"`): `3 failed, 105 passed, 1 deselected, 1 warning, 1 error in 13.14s` — exit code 1.
+- Failing: `test_timeline_and_longest_lock`, `test_timeline_covers_whole_video_before_tracking`, `test_no_lock_means_no_longest`, `tests/test_timeline.py`
+- **Green** (after the implementation commit, `python -m pytest`): `117 passed, 1 warning in 58.16s` — exit code 0. The tests were not modified between red and green.
+
+### Acceptance Criteria Coverage
+
+| Scenario | Status | Test(s) |
+|---|---|---|
+| Timeline covers the whole video | ✅ Pass | test_timeline.py::test_timeline_segments_cover_every_frame_in_order, test_api_timeline.py::test_timeline_and_longest_lock, ::test_timeline_covers_whole_video_before_tracking |
+| Longest lock is highlighted | ✅ Pass | test_timeline.py::test_longest_period_is_selected; outline/star checked manually in the browser |
+| Tie for the longest lock | ✅ Pass | test_timeline.py::test_longest_boundaries[4-2\|5-2\|6-8] |
+| No lock at all | ✅ Pass | test_timeline.py::test_no_lock_means_no_longest, test_api_timeline.py::test_no_lock_means_no_longest |
+| Jump from the timeline | ✅ Pass | Manual UI check (timeline click and table row click seek the video) |
+
+### Predicates / Invariants Matched
+
+| Entity/Predicate | Invariant / Boundary / Concurrency Rule | Verified By |
+|---|---|---|
+| `Segment coverage` | every frame exactly once, neighbours differ | test_timeline.py::test_timeline_segments_cover_every_frame_in_order |
+| `Longest` | most frames; tie → earliest (L−1 / L / L+1 frames) | ::test_longest_boundaries |
+| `Empty input` | empty timeline, longest null | ::test_empty_sequence_has_empty_timeline, ::test_no_lock_means_no_longest |
+
+### Open Questions Raised This Pass
+
+| ID | Question | Status | Resolution |
+|---|---|---|---|
+| IQ-6 | Once `timeline()` exists, should `lock_periods()` keep its own loop? | Resolved | No. `lock_periods()` is now derived from the `locked` timeline segments, so both always agree (refactor step; US-3 tests unchanged and still green). |
+
+### Deviations From Approved DESIGN/ARCHITECTURE
+
+None.
+
+### Version Control Actions
+
+- Branch: `feature/lock-timeline`
+- Commits: `test(timeline): add failing acceptance tests for US-4`; `feat(timeline): add lock timeline and longest lock`; `docs(implementation): log US-4 implementation pass`; `docs(approval): approve US-4 implementation`
+- PR: `feature/lock-timeline` → `main` (merge commit, so the red and green commits stay visible in history)
+
+---
+
 ## Pass: `2026-11-21` — US-`3` `Define a lock zone and report every lock period`
 
 **Branch:** `feature/lock-zone-periods`
