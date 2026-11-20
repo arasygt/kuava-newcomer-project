@@ -4,7 +4,17 @@
 
 ## Active Entry
 
-- **Status**: Pending Approval
+_No active entry — the next stage will open one._
+
+---
+
+## History
+
+<!-- Closed (Approved/Rejected) entries, most recent first. -->
+
+### Solution Architecture — US-2 target tracking
+
+- **Status**: Approved
 - **Stage**: Solution Architecture
 - **Session Started**: 2026-11-21
 - **Related Doc(s)**: docs/architecture/ARCHITECTURE.md (input: Requirement Analysis — US-2, approved 2026-11-21)
@@ -19,14 +29,8 @@
   - AQ-5 — synchronous request, per-video lock (409)
   - AQ-6 — KCF default
   - AQ-7 — downscale to max 640 px width
-- **Approved By**: 
-- **Approval Date**: 
-
----
-
-## History
-
-<!-- Closed (Approved/Rejected) entries, most recent first. -->
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
 
 ### Requirement Analysis — US-2 target tracking
 
