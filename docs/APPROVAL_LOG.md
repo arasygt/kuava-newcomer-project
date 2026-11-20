@@ -4,7 +4,21 @@
 
 ## Active Entry
 
-_No active entry — the next stage will open one._
+- **Status**: Pending Approval
+- **Stage**: Solution Architecture
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/architecture/ARCHITECTURE.md (input: Requirement Analysis — US-1, approved 2026-11-21)
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - Python 3.12 + FastAPI + vanilla JS (no build step, one-command run)
+  - H.264 check = ftyp magic + OpenCV FourCC + first-frame decode
+  - Uploads in git-ignored data/uploads/, results in memory
+  - Frame-exact access by sequential grab() instead of seeking
+  - Entities: VideoInfo, VideoSession
+- **Open Questions Resolved This Session**:
+  - none
+- **Approved By**: 
+- **Approval Date**: 
 
 ---
 
