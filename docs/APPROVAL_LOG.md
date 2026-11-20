@@ -4,7 +4,19 @@
 
 ## Active Entry
 
-_No active entry — the next stage will open one._
+- **Status**: Pending Approval
+- **Stage**: Implementation
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/implementation/IMPLEMENTATION_LOG.md, docs/design/DESIGN.md, docs/architecture/ARCHITECTURE.md
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - US-4 implemented on `feature/lock-timeline`
+  - Red: 3 failed, 105 passed, 1 deselected, 1 warning, 1 error in 13.14s
+  - Green: 117 passed, 1 warning in 58.16s
+- **Open Questions Resolved This Session**:
+  - IQ-6 — No. `lock_periods()` is now derived from the `locked` timeline segments, so both always agree (refactor step; US-3 tests unchanged and still green).
+- **Approved By**: 
+- **Approval Date**: 
 
 ---
 
