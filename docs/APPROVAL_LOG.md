@@ -12,6 +12,45 @@ _No active entry — the next stage will open one._
 
 <!-- Closed (Approved/Rejected) entries, most recent first. -->
 
+### Solution Architecture — US-2 target tracking
+
+- **Status**: Approved
+- **Stage**: Solution Architecture
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/architecture/ARCHITECTURE.md (input: Requirement Analysis — US-2, approved 2026-11-21)
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - KCF default tracker (CSRT ≈ 40–50 ms/frame on the 2-core dev laptop would endanger the 60 s budget)
+  - Frames wider than 640 px are downscaled for tracking; boxes scaled back to original pixels
+  - Synchronous POST /track in the thread pool; 409 for a second run on the same video
+  - Browser maps time to frame with requestVideoFrameCallback; seeks to mid-frame
+  - Entities: Box, FrameState, TrackRun
+- **Open Questions Resolved This Session**:
+  - AQ-5 — synchronous request, per-video lock (409)
+  - AQ-6 — KCF default
+  - AQ-7 — downscale to max 640 px width
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
+
+### Requirement Analysis — US-2 target tracking
+
+- **Status**: Approved
+- **Stage**: Requirement Analysis
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/design/DESIGN.md
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - US-2: track the target with an OpenCV tracker and show its box on every frame
+  - NFR: 30 s 720p video processed in < 60 s on a laptop CPU
+  - Rejection scenarios: box outside frame / too small, bad start frame, unknown tracker, concurrent run
+  - Out of scope this round: lock zone, timeline, loss handling
+- **Open Questions Resolved This Session**:
+  - OQ-6 — user chooses CSRT, KCF or MIL; default decided in architecture
+  - OQ-7 — track once on the server, draw stored boxes over the normal player
+  - OQ-8 — canvas overlay with frame counter and time, synced to playback and seeking
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
+
 ### Implementation — US-1 Upload a video and select the target
 
 - **Status**: Approved
