@@ -4,7 +4,17 @@
 
 ## Active Entry
 
-- **Status**: Pending Approval
+_No active entry — the next stage will open one._
+
+---
+
+## History
+
+<!-- Closed (Approved/Rejected) entries, most recent first. -->
+
+### Solution Architecture — US-3, US-4 lock zone analysis
+
+- **Status**: Approved
 - **Stage**: Solution Architecture
 - **Session Started**: 2026-11-21
 - **Related Doc(s)**: docs/architecture/ARCHITECTURE.md (input: Requirement Analysis — US-3, US-4, approved 2026-11-21)
@@ -18,14 +28,8 @@
   - AQ-8 — server-side pure Python
   - AQ-9 — original video pixels, top-left origin
   - AQ-10 — single canvas bar, min 1 px segments
-- **Approved By**: 
-- **Approval Date**: 
-
----
-
-## History
-
-<!-- Closed (Approved/Rejected) entries, most recent first. -->
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
 
 ### Requirement Analysis — US-3, US-4 lock zone analysis
 
