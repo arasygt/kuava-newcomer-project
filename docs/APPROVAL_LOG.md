@@ -4,7 +4,17 @@
 
 ## Active Entry
 
-- **Status**: Pending Approval
+_No active entry — the next stage will open one._
+
+---
+
+## History
+
+<!-- Closed (Approved/Rejected) entries, most recent first. -->
+
+### Solution Architecture — US-5 lost tracking and re-selection
+
+- **Status**: Approved
 - **Stage**: Solution Architecture
 - **Session Started**: 2026-11-21
 - **Related Doc(s)**: docs/architecture/ARCHITECTURE.md (input: Requirement Analysis — US-5, approved 2026-11-21)
@@ -16,14 +26,8 @@
   - Entity: LossRule
 - **Open Questions Resolved This Session**:
   - AQ-11 — area ratio is scale-invariant; computed in original pixels vs previous tracked box
-- **Approved By**: 
-- **Approval Date**: 
-
----
-
-## History
-
-<!-- Closed (Approved/Rejected) entries, most recent first. -->
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
 
 ### Requirement Analysis — US-5 lost tracking and re-selection
 
