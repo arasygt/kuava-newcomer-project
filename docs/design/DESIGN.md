@@ -123,6 +123,6 @@ Feature: US-2 Track the target through the video
 | OQ-3 | Must the target box be drawn on the first frame only, or may the user choose another starting frame? | requirement-analysis | Resolved | Round 1: first frame (frame 0), as the task says. Choosing another frame is only needed for re-selection and is handled in US-5. |
 | OQ-4 | What is the smallest box the user may draw? | requirement-analysis | Resolved | 4×4 video pixels. Smaller boxes are refused with "Box too small"; the trackers need some texture to work. |
 | OQ-5 | May the box extend outside the frame? | requirement-analysis | Resolved | No. The drag is clamped to the frame in the UI and the server rejects boxes outside the frame. |
-| OQ-6 | Which OpenCV tracker must be used? | requirement-analysis | Open | — |
-| OQ-7 | Should tracking run live while the video plays, or once before playback? | requirement-analysis | Open | — |
-| OQ-8 | What exactly does "show its box on every frame" require in the UI? | requirement-analysis | Open | — |
+| OQ-6 | Which OpenCV tracker must be used? | requirement-analysis | Resolved | The user can choose CSRT, KCF or MIL. The default is decided in the architecture stage (performance vs. accuracy, see AQ-6). |
+| OQ-7 | Should tracking run live while the video plays, or once before playback? | requirement-analysis | Resolved | Once, on the server, before playback. The browser then draws the stored boxes over the normal video player (as suggested in the task tip). |
+| OQ-8 | What exactly does "show its box on every frame" require in the UI? | requirement-analysis | Resolved | A canvas over the HTML5 video draws the box of the current frame, plus a frame counter and time; it updates during playback, pause and seeking. |

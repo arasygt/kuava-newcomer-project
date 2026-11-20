@@ -15,7 +15,9 @@
   - Rejection scenarios: box outside frame / too small, bad start frame, unknown tracker, concurrent run
   - Out of scope this round: lock zone, timeline, loss handling
 - **Open Questions Resolved This Session**:
-  - none
+  - OQ-6 — user chooses CSRT, KCF or MIL; default decided in architecture
+  - OQ-7 — track once on the server, draw stored boxes over the normal player
+  - OQ-8 — canvas overlay with frame counter and time, synced to playback and seeking
 - **Approved By**: 
 - **Approval Date**: 
 
