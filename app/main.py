@@ -12,6 +12,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from . import lock
 from .lock import Box
 from .store import VideoSession, VideoStore
 from .tracking import DEFAULT_TRACKER, TRACKERS, track_video
@@ -35,6 +36,10 @@ class TrackRequest(BaseModel):
     start_frame: int = Field(ge=0)
     box: BoxIn
     tracker: str = DEFAULT_TRACKER
+
+
+class AnalysisRequest(BaseModel):
+    zone: BoxIn
 
 
 def _readable(exc: RequestValidationError) -> str:
@@ -135,6 +140,15 @@ def create_app(upload_dir: Optional[Path] = None) -> FastAPI:
         finally:
             session.lock.release()
         return {"run": run.to_dict(), "states": _states_payload(session)}
+
+    @app.post("/api/videos/{vid}/analysis")
+    def analysis(vid: str, req: AnalysisRequest):
+        session = session_or_404(vid)
+        zone = req.zone.to_box()
+        info = session.info
+        if zone.x < 0 or zone.y < 0 or zone.x + zone.w > info.width or zone.y + zone.h > info.height:
+            raise HTTPException(400, "The lock zone must lie inside the video frame.")
+        return lock.analyse(session.states, zone, info.fps)
 
     app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
     return app
