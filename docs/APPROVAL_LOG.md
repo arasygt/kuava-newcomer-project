@@ -4,7 +4,17 @@
 
 ## Active Entry
 
-- **Status**: Pending Approval
+_No active entry — the next stage will open one._
+
+---
+
+## History
+
+<!-- Closed (Approved/Rejected) entries, most recent first. -->
+
+### Solution Architecture — US-1 video upload and target selection
+
+- **Status**: Approved
 - **Stage**: Solution Architecture
 - **Session Started**: 2026-11-21
 - **Related Doc(s)**: docs/architecture/ARCHITECTURE.md (input: Requirement Analysis — US-1, approved 2026-11-21)
@@ -20,14 +30,8 @@
   - AQ-2 — no persistence across restarts
   - AQ-3 — sequential grab() for exact frames
   - AQ-4 — ftyp + FourCC + decode, no FFmpeg needed
-- **Approved By**: 
-- **Approval Date**: 
-
----
-
-## History
-
-<!-- Closed (Approved/Rejected) entries, most recent first. -->
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
 
 ### Requirement Analysis — US-1 video upload and target selection
 
