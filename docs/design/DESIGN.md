@@ -19,6 +19,15 @@ So that the tool knows which object to track
 
 Scope (round 1): upload, validation, showing the first frame, drawing/confirming the box. Tracking is out of scope.
 
+### US-2: Track the target through the video
+As a UAV team analyst
+I want the selected target to be tracked through the whole video by an OpenCV tracker, with its box shown on every frame
+So that I can see where the target is at any moment while the video plays
+
+Scope (round 2): choosing a tracker, running it from the selected frame to the end, drawing the box over the normal video player. Lock zone, timeline and loss handling are out of scope.
+
+Non-functional (from the task): a 30-second 720p video is processed in less than 60 seconds on a laptop CPU.
+
 ## Gherkin Acceptance Criteria
 
 ```gherkin
@@ -73,6 +82,38 @@ Feature: US-1 Upload a video and select the target
     Then a 404 with the message "Video not found. Please upload it again." is returned
 ```
 
+```gherkin
+Feature: US-2 Track the target through the video
+
+  Scenario: Box on every frame
+    Given a valid 75-frame video is uploaded and a box is drawn on frame 0
+    When I press "Start tracking" with the default tracker
+    Then the tracker returns a box for every frame 0..74
+    And the box overlaps the true target position (IoU >= 0.5) on every frame of the synthetic test video
+    And the video player shows the box over the video on the current frame, with frame number and time
+
+  Scenario: Choose a tracker
+    Given the tracker list contains CSRT, KCF and MIL
+    When I choose one of them and start tracking
+    Then the chosen tracker is used and reported with the run time
+
+  Scenario: Invalid selection is refused
+    When I start tracking with a box outside the frame, a box smaller than 4x4, a zero width,
+      a negative or too large start frame, or an unknown tracker name
+    Then a 400 error with a message naming the problem is shown
+    And no tracking result is stored
+
+  Scenario: Tracking twice at the same time is refused
+    Given tracking is already running for a video
+    When a second tracking request arrives for the same video
+    Then it is refused with "Tracking is already running for this video."
+
+  Scenario: Performance budget
+    Given a 30-second 1280x720 30 fps H.264 video
+    When it is tracked with the default tracker on a laptop CPU
+    Then processing finishes in less than 60 seconds
+```
+
 ## Open Questions
 
 | ID | Question | Raised By | Status | Resolution |
@@ -82,3 +123,6 @@ Feature: US-1 Upload a video and select the target
 | OQ-3 | Must the target box be drawn on the first frame only, or may the user choose another starting frame? | requirement-analysis | Resolved | Round 1: first frame (frame 0), as the task says. Choosing another frame is only needed for re-selection and is handled in US-5. |
 | OQ-4 | What is the smallest box the user may draw? | requirement-analysis | Resolved | 4×4 video pixels. Smaller boxes are refused with "Box too small"; the trackers need some texture to work. |
 | OQ-5 | May the box extend outside the frame? | requirement-analysis | Resolved | No. The drag is clamped to the frame in the UI and the server rejects boxes outside the frame. |
+| OQ-6 | Which OpenCV tracker must be used? | requirement-analysis | Open | — |
+| OQ-7 | Should tracking run live while the video plays, or once before playback? | requirement-analysis | Open | — |
+| OQ-8 | What exactly does "show its box on every frame" require in the UI? | requirement-analysis | Open | — |

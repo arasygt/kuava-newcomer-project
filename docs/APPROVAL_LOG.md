@@ -4,7 +4,20 @@
 
 ## Active Entry
 
-_No active entry — the next stage will open one._
+- **Status**: Pending Approval
+- **Stage**: Requirement Analysis
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/design/DESIGN.md
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - US-2: track the target with an OpenCV tracker and show its box on every frame
+  - NFR: 30 s 720p video processed in < 60 s on a laptop CPU
+  - Rejection scenarios: box outside frame / too small, bad start frame, unknown tracker, concurrent run
+  - Out of scope this round: lock zone, timeline, loss handling
+- **Open Questions Resolved This Session**:
+  - none
+- **Approved By**: 
+- **Approval Date**: 
 
 ---
 
