@@ -28,6 +28,20 @@ Scope (round 2): choosing a tracker, running it from the selected frame to the e
 
 Non-functional (from the task): a 30-second 720p video is processed in less than 60 seconds on a laptop CPU.
 
+### US-3: Define a lock zone and report every lock period
+As a UAV team analyst
+I want to define a lock zone in the frame and get every continuous period in which the target box is inside it
+So that I can measure how long our camera kept the target locked, as in the TEKNOFEST Fighter UAV lock-on task
+
+Scope (round 3a): the zone, the locked/unlocked decision per frame and the list of lock periods.
+
+### US-4: See a lock timeline and the longest lock
+As a UAV team analyst
+I want a timeline of locked and unlocked periods and the longest lock highlighted
+So that I can judge the lock performance of a flight at a glance
+
+Scope (round 3b): timeline segments, longest lock, summary numbers. Non-functional (from the task): the lock-duration logic is tested with generated box sequences that have known answers.
+
 ## Gherkin Acceptance Criteria
 
 ```gherkin
@@ -114,6 +128,71 @@ Feature: US-2 Track the target through the video
     Then processing finishes in less than 60 seconds
 ```
 
+```gherkin
+Feature: US-3 Lock zone and lock periods
+
+  Scenario: Default lock zone
+    Given a video of width W and height H is uploaded
+    Then the lock zone is the rectangle x from 0.25W to 0.75W and y from 0.10H to 0.90H
+    And it is drawn as a dashed rectangle over the video
+
+  Scenario: User draws a new zone
+    Given tracking results exist
+    When I press "Draw lock zone" and drag a rectangle of at least 8x8 pixels on the video
+    Then the zone is replaced and all lock periods are recalculated
+
+  Scenario: Locked frame
+    Given a frame with a tracked box
+    When the whole box lies inside the zone (touching the border counts as inside)
+    Then the frame is locked
+    And a box that is 1 pixel (or 0.001 pixel) outside any edge is not locked
+
+  Scenario: Every continuous lock period is reported
+    Given per-frame states "O*10, I*20, O*5, I*30, L, U*9" at 25 fps (I inside, O outside, L lost, U untracked)
+    When the analysis runs
+    Then the periods are frames 10-29 (0.80 s) and 35-64 (1.20 s)
+    And each period shows start time, end time and duration
+    And the total locked time is 2.00 s
+
+  Scenario: Lost or untracked frames are never locked
+    Given a lost or untracked frame between two locked frames
+    Then it splits the lock into two periods
+
+  Scenario: Invalid zone is rejected
+    When the zone is partly outside the frame, has zero width/height or is missing a field
+    Then a 400 error with a clear message is returned and nothing changes
+
+  Scenario: Invalid fps is rejected by the lock logic
+    When the lock logic is called with fps <= 0
+    Then it raises an error instead of producing durations
+```
+
+```gherkin
+Feature: US-4 Timeline and longest lock
+
+  Scenario: Timeline covers the whole video
+    Given per-frame states "U*2, O*3, I*4, L, U*2"
+    Then the timeline segments are untracked 0-1, unlocked 2-4, locked 5-8, lost 9, untracked 10-11
+    And they are drawn in different colours on a bar that spans the whole video
+
+  Scenario: Longest lock is highlighted
+    Given lock periods of 3, 9 and 4 frames
+    Then the 9-frame period is the longest and is outlined on the timeline and starred in the table
+    And the "Longest lock" value shows its duration
+
+  Scenario: Tie for the longest lock
+    Given two lock periods of 5 frames
+    Then the earlier one is the longest
+
+  Scenario: No lock at all
+    Given the target is never inside the zone (or nothing is tracked yet)
+    Then the longest lock is empty ("0.00 s" / null) and the timeline still covers the whole video
+
+  Scenario: Jump from the timeline
+    When I click a point on the timeline or a row of the period table
+    Then the video seeks to that frame and the overlay shows it
+```
+
 ## Open Questions
 
 | ID | Question | Raised By | Status | Resolution |
@@ -126,3 +205,10 @@ Feature: US-2 Track the target through the video
 | OQ-6 | Which OpenCV tracker must be used? | requirement-analysis | Resolved | The user can choose CSRT, KCF or MIL. The default is decided in the architecture stage (performance vs. accuracy, see AQ-6). |
 | OQ-7 | Should tracking run live while the video plays, or once before playback? | requirement-analysis | Resolved | Once, on the server, before playback. The browser then draws the stored boxes over the normal video player (as suggested in the task tip). |
 | OQ-8 | What exactly does "show its box on every frame" require in the UI? | requirement-analysis | Resolved | A canvas over the HTML5 video draws the box of the current frame, plus a frame counter and time; it updates during playback, pause and seeking. |
+| OQ-9 | What does "the box is inside the zone" mean: fully inside, centre inside, or some overlap? | requirement-analysis | Open | — |
+| OQ-10 | What shape and default size does the lock zone have, and can the user change it? | requirement-analysis | Open | — |
+| OQ-11 | Is there a minimum duration for a lock to count (TEKNOFEST counts a lock after 4 s)? | requirement-analysis | Open | — |
+| OQ-12 | How are start, end and duration of a period calculated? | requirement-analysis | Open | — |
+| OQ-13 | Which states must the timeline distinguish? | requirement-analysis | Open | — |
+| OQ-14 | If two periods have the same (longest) length, which one is the longest? | requirement-analysis | Open | — |
+| OQ-15 | Should the timeline be interactive? | requirement-analysis | Open | — |

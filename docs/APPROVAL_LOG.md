@@ -4,7 +4,20 @@
 
 ## Active Entry
 
-_No active entry — the next stage will open one._
+- **Status**: Pending Approval
+- **Stage**: Requirement Analysis
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/design/DESIGN.md
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - US-3: lock zone + every continuous lock period
+  - US-4: timeline of locked/unlocked periods + longest lock
+  - NFR: lock-duration logic tested with generated box sequences with known answers
+  - Out of scope this round: loss detection and re-selection
+- **Open Questions Resolved This Session**:
+  - none
+- **Approved By**: 
+- **Approval Date**: 
 
 ---
 
