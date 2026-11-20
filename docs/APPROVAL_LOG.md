@@ -4,7 +4,17 @@
 
 ## Active Entry
 
-- **Status**: Pending Approval
+_No active entry — the next stage will open one._
+
+---
+
+## History
+
+<!-- Closed (Approved/Rejected) entries, most recent first. -->
+
+### Requirement Analysis — US-2 target tracking
+
+- **Status**: Approved
 - **Stage**: Requirement Analysis
 - **Session Started**: 2026-11-21
 - **Related Doc(s)**: docs/design/DESIGN.md
@@ -18,14 +28,8 @@
   - OQ-6 — user chooses CSRT, KCF or MIL; default decided in architecture
   - OQ-7 — track once on the server, draw stored boxes over the normal player
   - OQ-8 — canvas overlay with frame counter and time, synced to playback and seeking
-- **Approved By**: 
-- **Approval Date**: 
-
----
-
-## History
-
-<!-- Closed (Approved/Rejected) entries, most recent first. -->
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
 
 ### Implementation — US-1 Upload a video and select the target
 
