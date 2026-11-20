@@ -205,10 +205,10 @@ Feature: US-4 Timeline and longest lock
 | OQ-6 | Which OpenCV tracker must be used? | requirement-analysis | Resolved | The user can choose CSRT, KCF or MIL. The default is decided in the architecture stage (performance vs. accuracy, see AQ-6). |
 | OQ-7 | Should tracking run live while the video plays, or once before playback? | requirement-analysis | Resolved | Once, on the server, before playback. The browser then draws the stored boxes over the normal video player (as suggested in the task tip). |
 | OQ-8 | What exactly does "show its box on every frame" require in the UI? | requirement-analysis | Resolved | A canvas over the HTML5 video draws the box of the current frame, plus a frame counter and time; it updates during playback, pause and seeking. |
-| OQ-9 | What does "the box is inside the zone" mean: fully inside, centre inside, or some overlap? | requirement-analysis | Open | — |
-| OQ-10 | What shape and default size does the lock zone have, and can the user change it? | requirement-analysis | Open | — |
-| OQ-11 | Is there a minimum duration for a lock to count (TEKNOFEST counts a lock after 4 s)? | requirement-analysis | Open | — |
-| OQ-12 | How are start, end and duration of a period calculated? | requirement-analysis | Open | — |
-| OQ-13 | Which states must the timeline distinguish? | requirement-analysis | Open | — |
-| OQ-14 | If two periods have the same (longest) length, which one is the longest? | requirement-analysis | Open | — |
-| OQ-15 | Should the timeline be interactive? | requirement-analysis | Open | — |
+| OQ-9 | What does "the box is inside the zone" mean: fully inside, centre inside, or some overlap? | requirement-analysis | Resolved | Fully inside, borders inclusive (box edge exactly on the zone edge still counts). |
+| OQ-10 | What shape and default size does the lock zone have, and can the user change it? | requirement-analysis | Resolved | Axis-aligned rectangle. Default: 25%–75% of the width and 10%–90% of the height (similar to the TEKNOFEST target-hit area). The user can redraw it at any time. |
+| OQ-11 | Is there a minimum duration for a lock to count (TEKNOFEST counts a lock after 4 s)? | requirement-analysis | Resolved | No minimum: every continuous period of at least 1 frame is reported. The longest lock is highlighted (US-4). A minimum-duration filter is out of scope. |
+| OQ-12 | How are start, end and duration of a period calculated? | requirement-analysis | Resolved | From frame indices: start = first/fps, end = (last+1)/fps, duration = frames/fps. A 1-frame lock lasts 1/fps seconds. |
+| OQ-13 | Which states must the timeline distinguish? | requirement-analysis | Resolved | Locked, tracked but not locked, lost, and not tracked. The longest lock is outlined. |
+| OQ-14 | If two periods have the same (longest) length, which one is the longest? | requirement-analysis | Resolved | The earliest one. |
+| OQ-15 | Should the timeline be interactive? | requirement-analysis | Resolved | Yes: clicking the timeline or a row of the period table seeks the video to that frame. |

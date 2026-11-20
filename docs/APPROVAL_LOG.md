@@ -15,7 +15,13 @@
   - NFR: lock-duration logic tested with generated box sequences with known answers
   - Out of scope this round: loss detection and re-selection
 - **Open Questions Resolved This Session**:
-  - none
+  - OQ-9 — whole box inside the zone, borders inclusive
+  - OQ-10 — rectangle, default 25–75% × 10–90%, user can redraw
+  - OQ-11 — no minimum duration
+  - OQ-12 — start = first/fps, end = (last+1)/fps, duration = frames/fps
+  - OQ-13 — states: locked, tracked-not-locked, lost, not tracked
+  - OQ-14 — tie → earliest period
+  - OQ-15 — timeline and table rows seek the video
 - **Approved By**: 
 - **Approval Date**: 
 
