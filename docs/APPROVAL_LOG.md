@@ -16,7 +16,10 @@
   - Frame-exact access by sequential grab() instead of seeking
   - Entities: VideoInfo, VideoSession
 - **Open Questions Resolved This Session**:
-  - none
+  - AQ-1 — Python + FastAPI + vanilla JS
+  - AQ-2 — no persistence across restarts
+  - AQ-3 — sequential grab() for exact frames
+  - AQ-4 — ftyp + FourCC + decode, no FFmpeg needed
 - **Approved By**: 
 - **Approval Date**: 
 

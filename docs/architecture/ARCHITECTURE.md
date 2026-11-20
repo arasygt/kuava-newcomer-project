@@ -107,7 +107,7 @@ Traces to: US-1 (docs/design/DESIGN.md)
 
 | ID | Question | Raised By | Status | Resolution |
 |---|---|---|---|---|
-| AQ-1 | Which language/framework should the app use, given "one command to run" and OpenCV trackers? | solution-architect | Open | — |
-| AQ-2 | Should uploads and results be persisted across server restarts? | solution-architect | Open | — |
-| AQ-3 | How do we guarantee that the frame shown for selection is exactly the frame the tracker starts on? | solution-architect | Open | — |
-| AQ-4 | How do we detect H.264 without requiring FFmpeg on the user's machine? | solution-architect | Open | — |
+| AQ-1 | Which language/framework should the app use, given "one command to run" and OpenCV trackers? | solution-architect | Resolved | Python 3.12 + FastAPI + vanilla JS (see decision matrix). |
+| AQ-2 | Should uploads and results be persisted across server restarts? | solution-architect | Resolved | No. Uploads go to git-ignored `data/uploads/`; results are kept in memory. |
+| AQ-3 | How do we guarantee that the frame shown for selection is exactly the frame the tracker starts on? | solution-architect | Resolved | Sequential decode with `grab()` instead of `CAP_PROP_POS_FRAMES` seeking. |
+| AQ-4 | How do we detect H.264 without requiring FFmpeg on the user's machine? | solution-architect | Resolved | `ftyp` magic + OpenCV FourCC (`avc1/avc3/h264/x264`) + decode of the first frame. |
