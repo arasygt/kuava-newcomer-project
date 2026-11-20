@@ -4,7 +4,20 @@
 
 ## Active Entry
 
-_No active entry — the next stage will open one._
+- **Status**: Pending Approval
+- **Stage**: Solution Architecture
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/architecture/ARCHITECTURE.md (input: Requirement Analysis — US-3, US-4, approved 2026-11-21)
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - Lock logic as a pure Python module (app/lock.py) behind POST /analysis
+  - Zone = pixel rectangle sent with every analysis request (stateless server)
+  - Timeline drawn on one canvas from merged segments
+  - Entities: Zone, LockPeriod, Segment
+- **Open Questions Resolved This Session**:
+  - none
+- **Approved By**: 
+- **Approval Date**: 
 
 ---
 

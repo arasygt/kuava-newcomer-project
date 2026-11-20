@@ -119,6 +119,70 @@ Traces to: US-2 (docs/design/DESIGN.md)
 **Concurrency / Race-Scenario Analysis:**
 - Two tracking requests for the same video → the second one gets HTTP 409 "Tracking is already running for this video." (non-blocking `threading.Lock.acquire`). Requests for different videos run in parallel in FastAPI's thread pool.
 
+### Entity: Zone
+Traces to: US-3 (docs/design/DESIGN.md)
+
+Same fields as `Box` (x, y, w, h in original video pixels).
+
+**Invariants** (must always hold true):
+- The zone lies inside the frame: `x >= 0, y >= 0, x+w <= width, y+h <= height`.
+- A box is inside the zone ⇔ `box.x >= z.x and box.y >= z.y and box.x+box.w <= z.x+z.w and box.y+box.h <= z.y+z.h`.
+
+**Boundary Behavior:**
+- Min/Max: zone equal to the full frame is accepted; one pixel outside (x = −1 or w = width+1) → HTTP 400. Box exactly on the zone border → inside; 1 px or 0.001 px beyond → outside.
+- Empty/Null/Zero: zero width/height or a missing field → HTTP 400. The UI refuses zones smaller than 8×8 px.
+- Overflow/Truncation: the UI rounds zone coordinates to whole pixels.
+
+**Concurrency / Race-Scenario Analysis:**
+- The zone is not stored on the server; every analysis request carries it, so two browser tabs with different zones cannot interfere.
+
+### Entity: LockPeriod
+Traces to: US-3 (docs/design/DESIGN.md)
+
+| Field | Type | Unit | Constraints |
+|---|---|---|---|
+| start_frame | int | frame index | first locked frame |
+| end_frame | int | frame index | last locked frame, ≥ start_frame |
+| frames | int | frames | = end_frame − start_frame + 1 ≥ 1 |
+| start_time | float | s | = start_frame / fps |
+| end_time | float | s | = (end_frame + 1) / fps |
+| duration | float | s | = frames / fps |
+
+**Invariants** (must always hold true):
+- Every frame in a period is `tracked` with its box inside the zone; the frames just before and after are not.
+- Periods never overlap and are sorted by start frame.
+
+**Boundary Behavior:**
+- Min/Max: a 1-frame lock is a period of duration 1/fps; a fully locked video is one period from 0 to frame_count−1.
+- Empty/Null/Zero: no locked frame → empty list; empty state list → empty list; fps ≤ 0 → `ValueError`.
+- Overflow/Truncation: times are rounded to 4 decimals only in the JSON output.
+
+**Concurrency / Race-Scenario Analysis:**
+- Computed on demand from the current states (pure function); no cached result can become stale.
+
+### Entity: Segment (timeline)
+Traces to: US-4 (docs/design/DESIGN.md)
+
+| Field | Type | Unit | Constraints |
+|---|---|---|---|
+| state | str | — | `locked` \| `unlocked` \| `lost` \| `untracked` |
+| start_frame | int | frame index | ≥ 0 |
+| end_frame | int | frame index | ≥ start_frame |
+| start_time / end_time | float | s | start_frame/fps, (end_frame+1)/fps |
+
+**Invariants** (must always hold true):
+- Segments cover every frame exactly once, in order; two neighbouring segments never have the same state.
+- The `locked` segments are exactly the lock periods of US-3.
+- `longest` is the lock period with the most frames; on a tie, the earliest.
+
+**Boundary Behavior:**
+- Min/Max: a fully untracked video is a single `untracked` segment 0..frame_count−1.
+- Empty/Null/Zero: empty state list → empty timeline; no lock → `longest = null`.
+- Overflow/Truncation: segments narrower than one pixel are drawn 1 px wide in the UI so single lost frames stay visible.
+
+**Concurrency / Race-Scenario Analysis:**
+- Same as LockPeriod (pure function of states + zone).
+
 ## Technology / Design Decisions
 
 ### Decision: Language and framework
@@ -213,6 +277,40 @@ Measured on the development laptop (2 CPU cores), 320×240 synthetic clip: CSRT 
 **Why rVFC:** box stays in sync with every displayed frame.
 **Why not timeupdate:** too coarse.
 
+### Decision: Where the lock logic runs
+
+| Option | Benefits | Drawbacks | Chosen |
+|---|---|---|---|
+| Pure Python module `app/lock.py` on the server, called by `POST /analysis` | Testable with generated sequences (task NFR); single source of truth | A request per zone change (cheap: ~1 ms for 900 frames) | ✅ |
+| Compute in browser JavaScript | Instant feedback | Would need a JS test setup; logic duplicated if the server also needs it | ❌ |
+
+**Why server-side pure Python:** the lock-duration logic must be unit-tested with known answers; pure functions make that easy.
+**Why not browser JS:** duplicate logic and a second test stack. (The browser only colours the current box locked/unlocked for display.)
+
+### Decision: Representation of the lock zone
+
+| Option | Benefits | Drawbacks | Chosen |
+|---|---|---|---|
+| Axis-aligned rectangle in video pixels, sent with each analysis request | Matches the competition's rectangular target area; stateless server | Cannot express non-rectangular zones | ✅ |
+| Polygon zone | Any shape | Point-in-polygon for boxes, more UI | ❌ |
+| Normalised coordinates (0..1) | Resolution-independent | Needs conversion everywhere; boxes are in pixels | ❌ |
+
+**Why pixel rectangle:** simplest rule that matches the requirement.
+**Why not polygon:** no requirement for it.
+**Why not normalised:** every other quantity is in pixels.
+
+### Decision: Timeline rendering
+
+| Option | Benefits | Drawbacks | Chosen |
+|---|---|---|---|
+| Single `<canvas>` bar drawn from server segments | Handles thousands of frames fast; easy to outline the longest lock | Needs manual click → frame mapping | ✅ |
+| One DOM element per segment | Easy styling and hover | Thousands of elements for flickering states; slower | ❌ |
+| Chart library (Chart.js) | Axes and tooltips for free | Extra dependency for one bar | ❌ |
+
+**Why canvas:** fast, dependency-free, consistent with the video overlay.
+**Why not DOM segments:** poor performance on long, noisy timelines.
+**Why not a chart library:** unnecessary dependency.
+
 ## Open Questions
 
 | ID | Question | Raised By | Status | Resolution |
@@ -224,3 +322,6 @@ Measured on the development laptop (2 CPU cores), 320×240 synthetic clip: CSRT 
 | AQ-5 | Should tracking run in a background job with progress, or in the request? | solution-architect | Resolved | In the request (thread pool). The 60 s budget keeps it short; concurrent runs on the same video get HTTP 409. |
 | AQ-6 | Which tracker is the default, given the performance budget? | solution-architect | Resolved | KCF (≈ 10 s for 30 s 720p on the dev laptop). CSRT/MIL stay selectable. |
 | AQ-7 | Should frames be downscaled for tracking, and to what size? | solution-architect | Resolved | Yes, to a maximum width of 640 px; boxes are scaled back to original pixels. |
+| AQ-8 | Should the lock logic run in the browser or on the server? | solution-architect | Open | — |
+| AQ-9 | Which coordinate system do boxes and zones use? | solution-architect | Open | — |
+| AQ-10 | How should a timeline with thousands of frames be drawn efficiently? | solution-architect | Open | — |
