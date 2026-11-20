@@ -221,6 +221,6 @@ Measured on the development laptop (2 CPU cores), 320×240 synthetic clip: CSRT 
 | AQ-2 | Should uploads and results be persisted across server restarts? | solution-architect | Resolved | No. Uploads go to git-ignored `data/uploads/`; results are kept in memory. |
 | AQ-3 | How do we guarantee that the frame shown for selection is exactly the frame the tracker starts on? | solution-architect | Resolved | Sequential decode with `grab()` instead of `CAP_PROP_POS_FRAMES` seeking. |
 | AQ-4 | How do we detect H.264 without requiring FFmpeg on the user's machine? | solution-architect | Resolved | `ftyp` magic + OpenCV FourCC (`avc1/avc3/h264/x264`) + decode of the first frame. |
-| AQ-5 | Should tracking run in a background job with progress, or in the request? | solution-architect | Open | — |
-| AQ-6 | Which tracker is the default, given the performance budget? | solution-architect | Open | — |
-| AQ-7 | Should frames be downscaled for tracking, and to what size? | solution-architect | Open | — |
+| AQ-5 | Should tracking run in a background job with progress, or in the request? | solution-architect | Resolved | In the request (thread pool). The 60 s budget keeps it short; concurrent runs on the same video get HTTP 409. |
+| AQ-6 | Which tracker is the default, given the performance budget? | solution-architect | Resolved | KCF (≈ 10 s for 30 s 720p on the dev laptop). CSRT/MIL stay selectable. |
+| AQ-7 | Should frames be downscaled for tracking, and to what size? | solution-architect | Resolved | Yes, to a maximum width of 640 px; boxes are scaled back to original pixels. |

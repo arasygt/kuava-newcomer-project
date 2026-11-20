@@ -16,7 +16,9 @@
   - Browser maps time to frame with requestVideoFrameCallback; seeks to mid-frame
   - Entities: Box, FrameState, TrackRun
 - **Open Questions Resolved This Session**:
-  - none
+  - AQ-5 — synchronous request, per-video lock (409)
+  - AQ-6 — KCF default
+  - AQ-7 — downscale to max 640 px width
 - **Approved By**: 
 - **Approval Date**: 
 
