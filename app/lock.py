@@ -12,7 +12,7 @@ Definitions (see docs/architecture/ARCHITECTURE.md, Entity: LockPeriod):
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Iterable, Optional, Sequence
 
 # Per-frame tracking status values
 TRACKED = "tracked"      # tracker produced a valid box for this frame
@@ -89,6 +89,23 @@ class LockPeriod:
         }
 
 
+@dataclass(frozen=True)
+class Segment:
+    """Run of consecutive frames sharing one timeline state."""
+    state: str  # LOCKED | UNLOCKED | LOST | UNTRACKED
+    start_frame: int
+    end_frame: int
+
+    def to_dict(self, fps: float) -> dict:
+        return {
+            "state": self.state,
+            "start_frame": self.start_frame,
+            "end_frame": self.end_frame,
+            "start_time": round(self.start_frame / fps, 4),
+            "end_time": round((self.end_frame + 1) / fps, 4),
+        }
+
+
 def is_inside(box: Optional[Box], zone: Zone) -> bool:
     """True when the whole box lies inside the zone (borders inclusive)."""
     if box is None:
@@ -107,33 +124,47 @@ def frame_state(state: FrameState, zone: Zone) -> str:
     return state.status  # LOST or UNTRACKED
 
 
+def timeline(states: Sequence[FrameState], zone: Zone) -> list[Segment]:
+    """Collapse per-frame states into consecutive segments."""
+    segments: list[Segment] = []
+    for s in states:
+        st = frame_state(s, zone)
+        if segments and segments[-1].state == st and segments[-1].end_frame == s.frame - 1:
+            last = segments[-1]
+            segments[-1] = Segment(st, last.start_frame, s.frame)
+        else:
+            segments.append(Segment(st, s.frame, s.frame))
+    return segments
+
+
 def lock_periods(states: Sequence[FrameState], zone: Zone, fps: float) -> list[LockPeriod]:
     if fps <= 0:
         raise ValueError("fps must be positive")
-    periods: list[LockPeriod] = []
-    start: Optional[int] = None
-    prev_frame: Optional[int] = None
-    for s in states:
-        locked = frame_state(s, zone) == LOCKED
-        if locked and start is not None and prev_frame == s.frame - 1:
-            prev_frame = s.frame
-            continue
-        if start is not None:
-            periods.append(LockPeriod(start, prev_frame, fps))
-            start = None
-        if locked:
-            start = prev_frame = s.frame
-    if start is not None:
-        periods.append(LockPeriod(start, prev_frame, fps))
-    return periods
+    return [
+        LockPeriod(seg.start_frame, seg.end_frame, fps)
+        for seg in timeline(states, zone)
+        if seg.state == LOCKED
+    ]
+
+
+def longest_period(periods: Iterable[LockPeriod]) -> Optional[LockPeriod]:
+    """Longest period; ties go to the earliest one. None when there are no locks."""
+    best: Optional[LockPeriod] = None
+    for p in periods:
+        if best is None or p.frames > best.frames:
+            best = p
+    return best
 
 
 def analyse(states: Sequence[FrameState], zone: Zone, fps: float) -> dict:
     periods = lock_periods(states, zone, fps)
+    longest = longest_period(periods)
     locked_frames = sum(p.frames for p in periods)
     return {
         "zone": zone.to_dict(),
         "periods": [p.to_dict() for p in periods],
+        "longest": longest.to_dict() if longest else None,
         "total_locked_frames": locked_frames,
         "total_locked_time": round(locked_frames / fps, 4),
+        "timeline": [seg.to_dict(fps) for seg in timeline(states, zone)],
     }

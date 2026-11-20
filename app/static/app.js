@@ -94,6 +94,7 @@ async function uploadFile(file) {
     $("video").src = `/api/videos/${v.id}/file`;
     $("uploadStatus").textContent = "";
     renderSummary();
+    drawTimeline();
     await openSelect(0, false);
   } catch (e) {
     $("uploadStatus").textContent = "";
@@ -185,6 +186,7 @@ async function refreshAnalysis() {
     showError(e.message);
   }
   renderSummary();
+  drawTimeline();
   drawOverlay();
 }
 function toggleZoneDraw() {
@@ -256,14 +258,42 @@ function drawOverlay(frame) {
   $("hudTime").textContent = fmt(vid.currentTime);
   $("hudState").textContent = st.toUpperCase();
   $("hudState").style.color = COLORS[st] || COLORS.untracked;
+  drawTimeline();
+}
+function drawTimeline() {
+  const c = $("timeline");
+  const w = c.clientWidth || 800, h = 56;
+  if (c.width !== w) c.width = w;
+  c.height = h;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = COLORS.untracked;
+  ctx.fillRect(0, 0, w, h);
+  if (!state.video) return;
+  const n = state.video.frame_count, px = (f) => (f / n) * w;
+  const segs = state.analysis ? state.analysis.timeline : [];
+  for (const s of segs) {
+    ctx.fillStyle = COLORS[s.state];
+    ctx.fillRect(px(s.start_frame), 10, Math.max(1, px(s.end_frame + 1) - px(s.start_frame)), h - 20);
+  }
+  const L = state.analysis && state.analysis.longest;
+  if (L) {
+    ctx.strokeStyle = COLORS.longest; ctx.lineWidth = 3;
+    ctx.strokeRect(px(L.start_frame), 4, Math.max(2, px(L.end_frame + 1) - px(L.start_frame)), h - 8);
+  }
+  if (lastFrame >= 0) {
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(px(lastFrame), 0, 2, h);
+  }
 }
 function renderSummary() {
   const a = state.analysis, body = $("periodsBody");
   if (!a) {
     $("statTotal").textContent = $("statCount").textContent = "—";
+    $("statLongest").textContent = "—";
     body.innerHTML = '<tr><td colspan="4" class="hint">No data yet</td></tr>';
     return;
   }
+  $("statLongest").textContent = a.longest ? fmt(a.longest.duration) : "0.00 s";
   $("statTotal").textContent = fmt(a.total_locked_time);
   $("statCount").textContent = a.periods.length;
   if (!a.periods.length) {
@@ -273,7 +303,7 @@ function renderSummary() {
   body.innerHTML = "";
   a.periods.forEach((p, i) => {
     const tr = document.createElement("tr");
-    const isLongest = false;
+    const isLongest = a.longest && p.start_frame === a.longest.start_frame;
     if (isLongest) tr.className = "longest";
     tr.innerHTML = `<td>${i + 1}${isLongest ? " ★" : ""}</td><td>${fmt(p.start_time)}</td>` +
       `<td>${fmt(p.end_time)}</td><td>${fmt(p.duration)}</td>`;
@@ -328,8 +358,15 @@ async function init() {
     $("video").removeAttribute("src"); $("fileInput").value = ""; $("videoMeta").textContent = "";
     $("statRun").textContent = "—"; show("uploadView");
     renderSummary();
+    drawTimeline();
   };
   $("video").onerror = () => { if (state.video) showError("The browser could not play this video."); };
+  $("timeline").onclick = (e) => {
+    if (!state.video || $("playView").classList.contains("hidden")) return;
+    const r = e.target.getBoundingClientRect();
+    seekToFrame(Math.floor(((e.clientX - r.left) / r.width) * state.video.frame_count));
+  };
   startRenderLoop();
+  drawTimeline();
 }
 init();

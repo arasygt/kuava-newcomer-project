@@ -67,6 +67,7 @@
     <aside class="panel side">
       <h3>Lock summary</h3>
       <div class="stats">
+        <div class="stat"><div class="label">Longest lock</div><div id="statLongest" class="value">—</div></div>
         <div class="stat"><div class="label">Total locked</div><div id="statTotal" class="value">—</div></div>
         <div class="stat"><div class="label">Lock periods</div><div id="statCount" class="value">—</div></div>
         <div class="stat"><div class="label">Last run</div><div id="statRun" class="value small">—</div></div>
@@ -79,6 +80,21 @@
         </table>
       </div>
     </aside>
+
+    <section class="panel timeline-panel">
+      <div class="stage-head">
+        <h3>Timeline</h3>
+        <div class="legend">
+          <span><i class="sw locked"></i>Locked</span>
+          <span><i class="sw unlocked"></i>Tracked, not locked</span>
+          <span><i class="sw lost"></i>Lost</span>
+          <span><i class="sw untracked"></i>Not tracked</span>
+          <span><i class="sw longest"></i>Longest lock</span>
+        </div>
+      </div>
+      <canvas id="timeline" height="56"></canvas>
+      <div class="hint">Click the timeline to jump to that moment.</div>
+    </section>
   </main>
 
   <script src="app.js"></script>
