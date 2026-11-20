@@ -4,7 +4,17 @@
 
 ## Active Entry
 
-- **Status**: Pending Approval
+_No active entry — the next stage will open one._
+
+---
+
+## History
+
+<!-- Closed (Approved/Rejected) entries, most recent first. -->
+
+### Implementation — US-5 Detect lost tracking and re-select the target
+
+- **Status**: Approved
 - **Stage**: Implementation
 - **Session Started**: 2026-11-21
 - **Related Doc(s)**: docs/implementation/IMPLEMENTATION_LOG.md, docs/design/DESIGN.md, docs/architecture/ARCHITECTURE.md
@@ -16,14 +26,8 @@
 - **Open Questions Resolved This Session**:
   - IQ-7 — Use a scripted stand-in for the OpenCV tracker (the external library boundary) for exact frames, plus a real KCF run on a video where the target disappears (frames 30–39) with a range assertion.
   - IQ-8 — `HTMLImageElement.decode()` can stay pending while the tab is hidden. Replaced with `onload`/`onerror`, and stale frame loads are ignored.
-- **Approved By**: 
-- **Approval Date**: 
-
----
-
-## History
-
-<!-- Closed (Approved/Rejected) entries, most recent first. -->
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
 
 ### Solution Architecture — US-5 lost tracking and re-selection
 
