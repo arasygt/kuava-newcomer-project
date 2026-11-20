@@ -4,7 +4,17 @@
 
 ## Active Entry
 
-- **Status**: Pending Approval
+_No active entry — the next stage will open one._
+
+---
+
+## History
+
+<!-- Closed (Approved/Rejected) entries, most recent first. -->
+
+### Requirement Analysis — US-5 lost tracking and re-selection
+
+- **Status**: Approved
 - **Stage**: Requirement Analysis
 - **Session Started**: 2026-11-21
 - **Related Doc(s)**: docs/design/DESIGN.md
@@ -17,14 +27,8 @@
   - OQ-17 — strictly > 50% vs the previous frame; exactly 50% still tracked
   - OQ-18 — re-select on any frame via frame stepping; earlier results kept
   - OQ-19 — lost frames are never locked
-- **Approved By**: 
-- **Approval Date**: 
-
----
-
-## History
-
-<!-- Closed (Approved/Rejected) entries, most recent first. -->
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
 
 ### Implementation — US-4 See a lock timeline and the longest lock
 
