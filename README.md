@@ -56,7 +56,7 @@ python scripts/make_sample_video.py data/sample.mp4
 python -m pytest
 ```
 
-134 tests + 1 performance test. All test videos are generated at test time in a temp folder (`tests/videogen.py`), so no video is stored in the repository. Skip the ~15 s performance test with `python -m pytest -m "not perf"`.
+149 tests + 1 performance test. All test videos are generated at test time in a temp folder (`tests/videogen.py`), so no video is stored in the repository. Skip the ~15 s performance test with `python -m pytest -m "not perf"`.
 
 | File | Covers |
 |---|---|
@@ -66,6 +66,7 @@ python -m pytest
 | `test_lock_periods.py`, `test_api_lock.py` | US-3 inside-zone boundaries, lock periods from generated sequences with known answers |
 | `test_timeline.py`, `test_api_timeline.py` | US-4 timeline segments, longest lock and ties |
 | `test_loss.py`, `test_api_lost.py` | US-5 loss rules (exactly ±50% vs just over), failure stop, re-selection |
+| `test_robustness.py` | Final-review fixes: MIL minimum box (no freeze), non-finite input, stale-upload cleanup |
 
 ## Definitions
 
@@ -73,7 +74,14 @@ python -m pytest
 - **Lock period**: a maximal run of consecutive locked frames. `start = first_frame / fps`, `end = (last_frame + 1) / fps`, `duration = frames / fps` (a single locked frame lasts 1/fps s). No minimum duration.
 - **Longest lock**: the period with the most frames; on a tie, the earliest.
 - **Default lock zone**: x from 25% to 75% of the width, y from 10% to 90% of the height.
-- **Tracking lost** on frame t: the tracker reports failure (or a box with zero/negative size), **or** `|A_t − A_{t−1}| / A_{t−1} > 0.5` where A is the box area. Exactly 50% is still tracked. Tracking stops at the lost frame; later frames stay "not tracked" until the user re-selects.
+- **Tracking lost** on frame t: the tracker reports failure (or a box with zero/negative size), **or** `|A_t − A_{t−1}| / A_{t−1} > 0.5` where A is the box area. Exactly 50% is still tracked. Tracking stops at the lost frame; later frames stay "not tracked" until the user re-selects. KCF and MIL keep a fixed box size, so with them only the failure rule can trigger; the area rule fires with CSRT.
+- **Minimum box**: 4×4 px for KCF and CSRT, 8×8 px for MIL (MIL freezes on smaller boxes).
+
+### Known limitations
+
+- Uploads are kept only while the server runs; they are deleted from `data/uploads/` the next time it starts.
+- Frame ↔ time mapping assumes a constant frame rate (normal for drone footage; variable-frame-rate phone videos may be slightly off).
+- Stepping to a late frame in the re-select view decodes from the start for exactness (≈ 3 s near the end of a 30 s 720p clip).
 
 ## Architecture
 

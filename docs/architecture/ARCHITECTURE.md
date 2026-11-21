@@ -279,6 +279,8 @@ Measured on the development laptop (2 CPU cores), 320×240 synthetic clip: CSRT 
 | MIL default | Robust to partial occlusion | Slowest (> 100 s for 900 frames) | ❌ |
 
 **Why KCF:** it is the only one that meets the performance budget with a margin; the user can still choose CSRT when accuracy matters more than speed.
+
+**Consequence for the loss rule (noted in the final review):** KCF and MIL always return a box of the size they were given, so with them the "> 50% area change" rule can never fire and a loss is only detected through tracker failure. The rule is still applied to every frame, it is tested with a scripted tracker, and it does fire with CSRT, whose box follows the target's size (measured: 40 → 87 px on a growing-target clip). To demonstrate the area rule, use CSRT.
 **Why not CSRT:** it does not reliably meet the 60 s budget on a normal laptop.
 **Why not MIL:** far over the budget.
 
