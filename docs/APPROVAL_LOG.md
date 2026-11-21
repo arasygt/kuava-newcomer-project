@@ -4,7 +4,23 @@
 
 ## Active Entry
 
-_No active entry — the next stage will open one._
+### Implementation — Final-review fixes (MIL freeze, non-finite input, stale uploads)
+
+- **Status**: Pending Approval
+- **Stage**: Implementation
+- **Session Started**: 2026-11-21
+- **Related Doc(s)**: docs/implementation/IMPLEMENTATION_LOG.md, docs/architecture/ARCHITECTURE.md, README.md
+- **Requested By**: Aras Yiğitalp Koşmaz
+- **Decisions / Scope Covered**:
+  - Fixes on `fix/mil-freeze-nan-input-upload-cleanup`
+  - Red: 12 failed, 3 passed in 136.99s
+  - Green: 150 passed, 1 warning in 95.31s
+- **Open Questions Resolved This Session**:
+  - IQ-9 — MIL needs a box of at least 8×8 px (operator's choice); KCF/CSRT keep 4×4; tracked box never downscaled below 8 px
+  - IQ-10 — NaN/Infinity refused with a clear 400
+  - IQ-11 — at start-up delete only `<uuid>.mp4` uploads from the previous run
+- **Approved By**:
+- **Approval Date**:
 
 ---
 

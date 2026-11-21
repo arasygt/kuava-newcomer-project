@@ -4,6 +4,65 @@ Append one entry per implementation pass (one story per pass), **most recent fir
 
 ---
 
+## Pass: `2026-11-21` — Fix `Final-review fixes: MIL freeze, non-finite input, stale uploads`
+
+**Branch:** `fix/mil-freeze-nan-input-upload-cleanup`
+**Traces to:** `docs/design/DESIGN.md` (US-1 OQ-4 minimum box, US-2 tracker choice, cross-cutting "invalid input never crashes the app"), `docs/architecture/ARCHITECTURE.md` (AQ-2 no persistence, AQ-6 tracker choice, AQ-7 tracking width)
+**Approval basis:** bug fixes inside already-approved stories; the one new rule (MIL minimum box) was decided by the operator as IQ-9 below.
+
+### What the final review found
+
+1. **MIL freeze.** Measured in isolated processes: MIL never returns when the box it tracks is about 4 px or smaller (6 px and up finish). Because frames wider than 640 px are halved before tracking, any box under ~10 px on a 720p video hit this. The request hung forever, kept the per-video lock (every later Track click → 409) and used a CPU core until restart. KCF and CSRT were fine at the same sizes.
+2. **Non-finite numbers.** Python's JSON parser accepts `NaN` and `Infinity`. A hand-made request with `"x": NaN` got a confusing 400 ("cannot convert float NaN to integer") and a NaN lock zone produced a 500. The UI never sends these, but the requirement is a clear message for any invalid input.
+3. **Stale uploads.** Sessions are in memory only (AQ-2), so after a restart every file in `data/uploads/` was unreachable but stayed on disk forever.
+
+### Red / Green Evidence
+
+- **Red** (`tests/test_robustness.py` committed before the fix, `python -m pytest tests/test_robustness.py`): `12 failed, 3 passed in 136.99s` — exit code 1. The 3 passing tests describe behaviour that already worked (MIL with 8 px boxes on a small video; KCF/CSRT with 4×4 boxes). The MIL tests fail by timeout rather than hanging the suite (daemon thread + join timeout).
+- **Green** (after the fix commit, full suite `python -m pytest`): `150 passed, 1 warning in 95.31s` — exit code 0.
+- **Test change after green (disclosed):** `test_stale_uploads_are_removed_on_startup` was made *stricter* in a refactor step: it now also requires that an `.mp4` not named like our uploads (`holiday.mp4`) is kept, because `TLT_UPLOAD_DIR` can point at any folder. The code was narrowed to match. No test was loosened.
+
+### Acceptance Criteria Coverage
+
+| Scenario | Status | Test(s) |
+|---|---|---|
+| MIL refuses boxes under 8×8 with a clear message (7.9 refused, 8 / 8.1 accepted) | ✅ Pass | test_robustness.py::test_mil_minimum_box_boundaries[7.9/8/8.1], ::test_api_refuses_small_mil_box_quickly |
+| KCF and CSRT keep the approved 4×4 minimum (OQ-4) | ✅ Pass | ::test_kcf_and_csrt_keep_the_4x4_minimum |
+| Downscaling never shrinks the tracked box below 8 px | ✅ Pass | ::test_tracking_scale_keeps_box_large_enough (4 cases), ::test_mil_with_small_box_on_720p_finishes |
+| NaN / Infinity / −Infinity in a box or zone → 400 naming the field | ✅ Pass | ::test_non_finite_box_values_give_clear_error (3 cases), ::test_non_finite_zone_gives_clear_error |
+| Our uploads from a previous run are deleted at start-up; other files are kept | ✅ Pass | ::test_stale_uploads_are_removed_on_startup |
+
+### Predicates / Invariants Matched
+
+| Entity/Predicate | Invariant / Boundary / Concurrency Rule | Verified By |
+|---|---|---|
+| `MIL_MIN_BOX` | MIL box ≥ 8×8 (7.9 refused / 8 accepted / 8.1 accepted) | test_mil_minimum_box_boundaries |
+| `tracking_scale` | `min(1, max(640 / W, 8 / min(w, h)))`: never upscales, never shrinks the box below 8 px | test_tracking_scale_keeps_box_large_enough |
+| `BoxIn` | all four numbers finite | test_non_finite_* |
+| `remove_stale_uploads` | deletes only `<32 hex>.mp4` | test_stale_uploads_are_removed_on_startup |
+
+### Open Questions Raised This Pass
+
+| ID | Question | Status | Resolution |
+|---|---|---|---|
+| IQ-9 | MIL freezes when the box it tracks is ~4 px or smaller. What should happen when the user picks MIL with a small box? | Resolved (operator) | MIL needs a box of at least 8×8 px; smaller boxes are refused with "The MIL tracker needs a box of at least 8x8 pixels. Draw a larger box or choose KCF or CSRT." KCF and CSRT keep the 4×4 minimum. Independently, downscaling never makes the tracked box smaller than 8 px. |
+| IQ-10 | Python's JSON parser accepts `NaN`/`Infinity`. Should the API accept them? | Resolved | No. Box and zone fields use `allow_inf_nan=False`, so they return the usual 400 ("box.x: Input should be a finite number"). |
+| IQ-11 | Uploads survive restarts on disk but sessions do not. Clean up, and how safely? | Resolved | At start-up delete only files named like our uploads (`<uuid4 hex>.mp4`), so a misconfigured upload folder can never lose someone's own videos. |
+
+### Deviations From Approved DESIGN/ARCHITECTURE
+
+- New rule for MIL only (minimum box 8×8), caused by IQ-9. OQ-4 (4×4) still holds for KCF and CSRT.
+- AQ-7 (downscale to 640 px) is now limited so the tracked box stays ≥ 8 px; for very small targets on wide videos the frame is tracked at a higher resolution.
+- ARCHITECTURE.md (AQ-6 section) gained a note: with KCF/MIL the area rule cannot fire because their box size is fixed.
+
+### Version Control Actions
+
+- Branch: `fix/mil-freeze-nan-input-upload-cleanup`
+- Commits: `test: add failing tests for MIL freeze, NaN input and stale uploads (red)`; `fix: stop MIL freeze on tiny boxes, refuse NaN input, clear stale uploads (green)`; `docs: log final-review fixes (IQ-9 to IQ-11)`
+- PR: `fix/mil-freeze-nan-input-upload-cleanup` → `main` (merge commit)
+
+---
+
 ## Pass: `2026-11-21` — US-`5` `Detect lost tracking and re-select the target`
 
 **Branch:** `feature/lost-tracking-reselect`
