@@ -103,8 +103,11 @@ def test_non_finite_zone_gives_clear_error(client, uploaded):
 def test_stale_uploads_are_removed_on_startup(tmp_path):
     up = tmp_path / "uploads"
     up.mkdir()
-    (up / "0123abcd.mp4").write_bytes(b"old upload")
+    ours = up / ("ab" * 16 + ".mp4")          # uploads are named <uuid4 hex>.mp4
+    ours.write_bytes(b"old upload")
+    (up / "holiday.mp4").write_bytes(b"someone else's video")
     (up / "notes.txt").write_text("not ours")
     create_app(upload_dir=up)
-    assert not (up / "0123abcd.mp4").exists()
-    assert (up / "notes.txt").exists()   # only our .mp4 uploads are deleted
+    assert not ours.exists()
+    assert (up / "holiday.mp4").exists()     # only files named like our uploads are deleted
+    assert (up / "notes.txt").exists()

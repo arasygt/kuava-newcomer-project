@@ -24,6 +24,10 @@ DEFAULT_TRACKER = "KCF"
 AREA_CHANGE_LIMIT = 0.5
 # Frames wider than this are downscaled before tracking (boxes are scaled back)
 TRACK_MAX_WIDTH = 640
+# Downscaling never shrinks the target box below this many pixels (IQ-9)
+MIN_TRACKED_PX = 8
+# MIL never returns on boxes of ~4 px or less, so it needs a larger selection (IQ-9)
+MIL_MIN_BOX = 8
 
 REASON_FAILURE = "tracker_failure"
 REASON_AREA = "area_change"
@@ -67,11 +71,23 @@ class TrackRun:
         }
 
 
-def validate_init_box(box: Box, width: int, height: int) -> None:
+def validate_init_box(box: Box, width: int, height: int, tracker_name: str = DEFAULT_TRACKER) -> None:
     if box.x < 0 or box.y < 0 or box.x + box.w > width or box.y + box.h > height:
         raise ValueError("The selected box must lie inside the video frame.")
     if box.w < 4 or box.h < 4:
         raise ValueError("The selected box is too small (minimum 4x4 pixels).")
+    if tracker_name == "MIL" and (box.w < MIL_MIN_BOX or box.h < MIL_MIN_BOX):
+        raise ValueError(
+            f"The MIL tracker needs a box of at least {MIL_MIN_BOX}x{MIL_MIN_BOX} pixels. "
+            "Draw a larger box or choose KCF or CSRT."
+        )
+
+
+def tracking_scale(frame_width: int, box: Box, max_width: int = TRACK_MAX_WIDTH) -> float:
+    """Downscale factor for tracking: fit max_width, but keep the box >= MIN_TRACKED_PX."""
+    scale = min(1.0, max_width / frame_width)
+    keep_box = MIN_TRACKED_PX / min(box.w, box.h)
+    return min(1.0, max(scale, keep_box))
 
 
 def make_tracker(name: str):
@@ -103,8 +119,8 @@ def track_video(
         if not ok:
             raise IndexError(f"Frame {start_frame} is beyond the end of the video")
         height, width = frame.shape[:2]
-        validate_init_box(init_box, width, height)
-        scale = min(1.0, max_width / width)
+        validate_init_box(init_box, width, height, tracker_name)
+        scale = tracking_scale(width, init_box, max_width)
 
         def prep(img):
             return img if scale == 1.0 else cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)

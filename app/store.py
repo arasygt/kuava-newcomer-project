@@ -1,6 +1,7 @@
 """In-memory registry of uploaded videos and their tracking results."""
 from __future__ import annotations
 
+import re
 import threading
 import uuid
 from dataclasses import dataclass, field
@@ -42,6 +43,16 @@ class VideoStore:
         self.upload_dir.mkdir(parents=True, exist_ok=True)
         self._sessions: dict[str, VideoSession] = {}
         self._lock = threading.Lock()
+
+    def remove_stale_uploads(self) -> None:
+        """Delete uploads left over from a previous run.
+
+        Only files named like our uploads (<32 hex chars>.mp4) are removed, so pointing
+        TLT_UPLOAD_DIR at another folder can never delete someone's own videos.
+        """
+        for path in self.upload_dir.glob("*.mp4"):
+            if re.fullmatch(r"[0-9a-f]{32}", path.stem):
+                path.unlink(missing_ok=True)
 
     def new_path(self) -> tuple[str, Path]:
         vid = uuid.uuid4().hex

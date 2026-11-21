@@ -23,10 +23,11 @@ DEFAULT_UPLOAD_DIR = Path(__file__).resolve().parent.parent / "data" / "uploads"
 
 
 class BoxIn(BaseModel):
-    x: float
-    y: float
-    w: float = Field(gt=0)
-    h: float = Field(gt=0)
+    # NaN / Infinity are valid in Python's JSON parser, so refuse them explicitly
+    x: float = Field(allow_inf_nan=False)
+    y: float = Field(allow_inf_nan=False)
+    w: float = Field(gt=0, allow_inf_nan=False)
+    h: float = Field(gt=0, allow_inf_nan=False)
 
     def to_box(self) -> Box:
         return Box(self.x, self.y, self.w, self.h)
@@ -53,6 +54,8 @@ def _readable(exc: RequestValidationError) -> str:
 def create_app(upload_dir: Optional[Path] = None) -> FastAPI:
     app = FastAPI(title="Target-Lock Video Tracker")
     store = VideoStore(Path(upload_dir or os.environ.get("TLT_UPLOAD_DIR", DEFAULT_UPLOAD_DIR)))
+    # Sessions live in memory only (AQ-2), so uploads from a previous run can never be used again
+    store.remove_stale_uploads()
     app.state.store = store
 
     @app.exception_handler(RequestValidationError)
