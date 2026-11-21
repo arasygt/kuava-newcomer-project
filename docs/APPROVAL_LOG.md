@@ -4,9 +4,17 @@
 
 ## Active Entry
 
+_No active entry — the next stage will open one._
+
+---
+
+## History
+
+<!-- Closed (Approved/Rejected) entries, most recent first. -->
+
 ### Implementation — Final-review fixes (MIL freeze, non-finite input, stale uploads)
 
-- **Status**: Pending Approval
+- **Status**: Approved
 - **Stage**: Implementation
 - **Session Started**: 2026-11-21
 - **Related Doc(s)**: docs/implementation/IMPLEMENTATION_LOG.md, docs/architecture/ARCHITECTURE.md, README.md
@@ -19,14 +27,8 @@
   - IQ-9 — MIL needs a box of at least 8×8 px (operator's choice); KCF/CSRT keep 4×4; tracked box never downscaled below 8 px
   - IQ-10 — NaN/Infinity refused with a clear 400
   - IQ-11 — at start-up delete only `<uuid>.mp4` uploads from the previous run
-- **Approved By**:
-- **Approval Date**:
-
----
-
-## History
-
-<!-- Closed (Approved/Rejected) entries, most recent first. -->
+- **Approved By**: Aras Yiğitalp Koşmaz
+- **Approval Date**: 2026-11-21
 
 ### Implementation — US-5 Detect lost tracking and re-select the target
 
